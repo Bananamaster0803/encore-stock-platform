@@ -116,8 +116,14 @@ header.adm-header{position:sticky;top:0;z-index:100;background:rgba(10,14,26,.92
 .ph-del{color:var(--danger);font-size:18px;padding:0 4px}
 .ph-edit{color:var(--primary);font-size:14px;padding:0 4px}
 .ph-edit-row{display:flex;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);gap:6px;flex-wrap:wrap}
-.ph-edit-row input[type=date]{width:120px;padding:5px 8px;font-size:13px;height:30px}
+.ph-edit-row input[type=date]{width:140px;padding:5px 8px;font-size:13px;height:30px}
 .ph-edit-row input[type=number]{flex:1;min-width:100px;padding:5px 8px;font-size:13px;height:30px}
+
+/* ADD PRICE MODAL */
+.add-price-card{margin-top:12px;padding:12px;border:1.5px dashed var(--border);border-radius:var(--radius);background:var(--surface2)}
+.add-price-card h4{font-size:13px;color:var(--muted);margin-bottom:10px}
+.add-price-form{display:grid;gap:10px}
+.add-price-form input{padding:8px 10px;font-size:13px}
 
 /* SETTINGS */
 .setting-row{margin-bottom:18px}
@@ -237,6 +243,16 @@ header.adm-header{position:sticky;top:0;z-index:100;background:rgba(10,14,26,.92
           <input type="number" id="priceInput" step="0.01" min="0" placeholder="输入今日价格">
         </div>
         <button class="btn btn-primary btn-block" onclick="savePrice()">保存今日价格</button>
+        
+        <!-- ★ 新增：批量添加历史价格 -->
+        <div class="add-price-card">
+          <h4>📅 批量添加历史价格</h4>
+          <div class="add-price-form">
+            <input type="date" id="historyDate" placeholder="选择日期">
+            <input type="number" id="historyPrice" step="0.01" min="0" placeholder="输入价格">
+            <button class="btn btn-primary btn-sm" onclick="saveHistoryPrice()">添加历史价格</button>
+          </div>
+        </div>
       </div>
     </div>
     <div class="card" id="priceHistoryCard" style="display:none">
@@ -687,7 +703,7 @@ function loadPriceSelects(){
   sel.innerHTML = '<option value="">— 请选择 —</option>' +
     DRAMAS.map(d => `<option value="${d.id}">${esc(d.title||'（未命名）')}</option>`).join('');
   if(cur) { sel.value = cur; loadPriceHistory(); }
-  $('todayDateLabel').textContent = todayKST()+' (KST)';
+  $('todayDateLabel').textContent = ' ' + todayKST()+' (KST)';
 }
 
 async function loadPriceHistory(){
@@ -734,8 +750,8 @@ function editPriceRow(rowId, dramaId, date, price){
   if(!row) return;
   row.className = 'ph-edit-row';
   row.innerHTML = `
-    <input type="date" id="phedit-date-${rowId}" value="${date}" style="width:140px;padding:5px 8px;font-size:13px;height:30px">
-    <input type="number" step="0.01" min="0" id="phedit-price-${rowId}" value="${price}" style="flex:1;min-width:100px;padding:5px 8px;font-size:13px;height:30px">
+    <input type="date" id="phedit-date-${rowId}" value="${date}">
+    <input type="number" step="0.01" min="0" id="phedit-price-${rowId}" value="${price}">
     <button onclick="savePriceEdit(${rowId},${dramaId})" style="color:var(--success);font-size:13px;font-weight:700;padding:0 8px;white-space:nowrap">保存</button>
     <button onclick="loadPriceHistory()" style="color:var(--muted);font-size:13px;padding:0 6px;white-space:nowrap">取消</button>
   `;
@@ -752,9 +768,7 @@ async function savePriceEdit(rowId, dramaId){
   const newPrice = parseFloat(inpPrice.value);
   if(!newDate || !newPrice || newPrice <= 0){ toast('请输入有效日期和价格','err'); return; }
   try{
-    // 删除旧记录
     await sbDelete('price_history', rowId);
-    // 插入新记录（日期可能不同）
     await sbUpsert('price_history', [{drama_id: dramaId, price_date: newDate, price: newPrice}], 'drama_id,price_date');
     toast('价格已更新 ✓');
     await loadPriceHistory();
@@ -762,6 +776,25 @@ async function savePriceEdit(rowId, dramaId){
   } catch(e){ toast('更新失败：'+e.message,'err'); }
 }
 window.savePriceEdit = savePriceEdit;
+
+// ★ 新增：批量添加历史价格
+async function saveHistoryPrice(){
+  const id = $('priceSelect').value;
+  const date = $('historyDate').value;
+  const price = parseFloat($('historyPrice').value);
+  if(!id){ toast('请选择作品','err'); return; }
+  if(!date){ toast('请选择日期','err'); return; }
+  if(!price || price <= 0){ toast('请输入有效价格','err'); return; }
+  try{
+    await sbUpsert('price_history', [{drama_id:parseInt(id), price_date:date, price}], 'drama_id,price_date');
+    $('historyDate').value = '';
+    $('historyPrice').value = '';
+    toast('历史价格已添加 ✓');
+    await loadPriceHistory();
+    await loadDramas();
+  } catch(e){ toast('保存失败：'+e.message,'err'); }
+}
+window.saveHistoryPrice = saveHistoryPrice;
 
 async function savePrice(){
   const id = $('priceSelect').value;
@@ -821,7 +854,7 @@ async function saveSettings(){
   try{
     await sbUpsert('settings', [payload], 'id');
     SETTINGS = payload;
-    toast('设置已保存 ✓');
+    toast('设置已保存 ✓');  // ★ 已经有了成功提示！
   } catch(e){ toast('保存失败：'+e.message,'err'); }
 }
 window.saveSettings = saveSettings;
