@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070b1f">
+<title>Encore Films · 숏드라마 투자 플랫폼</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<style>
+:root{--primary:#00d4ff;--primary2:#3b82f6;--bg:#070b1f;--rgb:0,212,255;--line:rgba(255,255,255,.1);--text:#fff;--faint:rgba(255,255,255,.55);--up:#ff4d6d;--down:#3b82f6}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--text);font-family:Pretendard,-apple-system,'Apple SD Gothic Neo',sans-serif;transition:background .5s}
+body{min-height:100vh;overflow-x:hidden}
+button{border:0;background:none;color:inherit;font:inherit;cursor:pointer}
+.aurora{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.aurora i{position:absolute;border-radius:50%;filter:blur(80px);opacity:.35;animation:float 14s ease-in-out infinite}
+.aurora i:nth-child(1){width:320px;height:320px;background:var(--primary);top:-120px;left:-80px}
+.aurora i:nth-child(2){width:260px;height:260px;background:var(--primary2);top:40%;right:-120px;animation-delay:-5s}
+.aurora i:nth-child(3){width:220px;height:220px;background:var(--primary);bottom:-100px;left:30%;opacity:.2;animation-delay:-9s}
+@keyframes float{50%{transform:translate(30px,40px) scale(1.1)}}
+.gridbg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:32px 32px;mask-image:linear-gradient(to bottom,#000,transparent 70%);-webkit-mask-image:linear-gradient(to bottom,#000,transparent 70%)}
+.header{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:calc(12px + env(safe-area-inset-top)) 18px 12px;background:rgba(0,0,0,.25);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-logo{width:36px;height:36px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 0 8px rgba(var(--rgb),.5))}
+.brand-logo svg,.brand-logo img{width:100%;height:100%;object-fit:contain;border-radius:8px}
+.brand-name{font-size:16px;font-weight:800;letter-spacing:.5px}
+.brand-sub{font-size:11px;color:var(--faint);margin-top:1px}
+.live{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:1px;padding:5px 10px;border-radius:99px;border:1px solid rgba(var(--rgb),.4);color:var(--primary);background:rgba(var(--rgb),.08)}
+.live b{width:6px;height:6px;border-radius:50%;background:var(--primary);box-shadow:0 0 8px var(--primary);animation:blink 1.4s infinite}
+@keyframes blink{50%{opacity:.2}}
+.main{position:relative;z-index:1;padding-bottom:40px}
+.hero{padding:28px 18px 8px}
+.kicker{font-size:10px;letter-spacing:2.5px;color:var(--primary);font-weight:700}
+.hero-title{font-size:28px;font-weight:800;line-height:1.25;margin-top:8px;background:linear-gradient(120deg,#fff 30%,var(--primary));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-meta{font-size:12px;color:var(--faint);margin-top:8px}
+.sum{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
+.sum div{padding:14px 10px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid var(--line);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);text-align:center}
+.sum b{display:block;font-size:22px;font-weight:800;color:var(--primary)}
+.sum span{font-size:11px;color:var(--faint)}
+.row-head{display:flex;justify-content:space-between;align-items:baseline;padding:26px 18px 12px}
+.row-head h2{font-size:18px;font-weight:800}
+.row-head span{font-size:12px;color:var(--faint)}
+.rail{display:flex;gap:14px;overflow-x:auto;padding:4px 18px 18px;scroll-snap-type:x mandatory;scrollbar-width:none}
+.rail::-webkit-scrollbar{display:none}
+.card{flex:0 0 168px;scroll-snap-align:start;border-radius:18px;overflow:hidden;background:rgba(255,255,255,.05);border:1px solid var(--line);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);cursor:pointer;transition:transform .25s,border-color .25s;animation:rise .6s both}
+.card:active{transform:scale(.97)}
+.card:hover{border-color:rgba(var(--rgb),.5)}
+@keyframes rise{from{opacity:0;transform:translateY(20px)}}
+.poster{position:relative;aspect-ratio:2/3;background:linear-gradient(160deg,rgba(var(--rgb),.25),rgba(0,0,0,.6));overflow:hidden}
+.poster img{width:100%;height:100%;object-fit:cover;display:block}
+.ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.ph b{font-size:56px;font-weight:900;color:rgba(255,255,255,.85);text-shadow:0 0 30px rgba(var(--rgb),.8)}
+.ph span{font-size:10px;letter-spacing:3px;color:var(--faint)}
+.poster::after{content:'';position:absolute;inset:auto 0 0 0;height:40%;background:linear-gradient(transparent,rgba(0,0,0,.6))}
+.chg{display:inline-block;font-size:11px;font-weight:800;padding:4px 8px;border-radius:8px}
+.chg.up{color:var(--up);background:rgba(255,77,109,.15)}
+.chg.down{color:#60a5fa;background:rgba(59,130,246,.15)}
+.chg.flat{color:var(--faint);background:rgba(255,255,255,.08)}
+.poster .chg{position:absolute;top:8px;left:8px;z-index:2;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.tag-out{position:absolute;top:8px;right:8px;z-index:2;font-size:11px;font-weight:800;padding:4px 8px;border-radius:8px;background:rgba(0,0,0,.7);color:#fff}
+.card.out .poster img,.card.out .ph{filter:grayscale(1);opacity:.6}
+.cb{padding:12px}
+.ct{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cp{font-size:18px;font-weight:800;margin-top:4px;color:var(--primary)}
+.spark{display:block;width:100%;height:40px;margin:8px 0}
+.bar{height:5px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--primary2),var(--primary));transition:width 1s}
+.bm{display:flex;justify-content:space-between;font-size:10px;color:var(--faint);margin-top:6px}
+.sk .poster{animation:shim 1.2s infinite}
+.sk .ln{height:12px;border-radius:6px;background:rgba(255,255,255,.08);margin-bottom:8px;animation:shim 1.2s infinite}
+@keyframes shim{50%{opacity:.4}}
+.empty{width:100%;padding:40px 10px;text-align:center;color:var(--faint);font-size:14px;line-height:1.7}
+.foot{text-align:center;font-size:11px;color:var(--faint);padding:30px 0 10px}
+.sheet{position:fixed;inset:0;z-index:50;visibility:hidden}
+.sheet.on{visibility:visible}
+.sheet-bd{position:absolute;inset:0;background:rgba(0,0,0,.6);opacity:0;transition:opacity .3s}
+.sheet.on .sheet-bd{opacity:1}
+.panel{position:absolute;inset:0;background:var(--bg);display:flex;flex-direction:column;transform:translateY(100%);transition:transform .4s cubic-bezier(.2,.8,.2,1)}
+.sheet.on .panel{transform:none}
+.grab{display:none}
+.close{position:absolute;top:calc(12px + env(safe-area-inset-top));right:14px;z-index:5;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.5);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);font-size:24px;line-height:1}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.d-hero{position:relative;height:420px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden}
+.d-bg{position:absolute;inset:-20px;background-size:cover;background-position:center;filter:blur(30px) brightness(.5);background-color:rgba(var(--rgb),.15)}
+.d-hero::after{content:'';position:absolute;inset:auto 0 0 0;height:50%;background:linear-gradient(transparent,var(--bg))}
+.d-poster{position:relative;z-index:2;width:200px;aspect-ratio:2/3;border-radius:16px;overflow:hidden;margin-bottom:20px;box-shadow:0 20px 50px rgba(0,0,0,.6),0 0 0 1px var(--line);background:linear-gradient(160deg,rgba(var(--rgb),.3),rgba(0,0,0,.6))}
+.d-poster img{width:100%;height:100%;object-fit:cover}
+.d-body{padding:4px 20px 120px}
+.d-title{font-size:24px;font-weight:800;text-align:center}
+.d-price{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+.d-price b{font-size:30px;font-weight:900;color:var(--primary)}
+.d-price small{font-size:11px;color:var(--faint)}
+.d-desc{font-size:14px;line-height:1.75;color:rgba(255,255,255,.8);margin-top:18px;white-space:pre-wrap}
+.d-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}
+.d-stat{padding:14px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid var(--line)}
+.d-stat span{display:block;font-size:11px;color:var(--faint)}
+.d-stat b{display:block;font-size:17px;font-weight:800;margin-top:4px}
+.d-prog{margin-top:14px;height:7px}
+.chart-box{margin-top:20px;padding:16px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.chart-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.chart-head b{font-size:15px}
+.chart-head span{font-size:11px;padding:3px 8px;border-radius:6px;background:rgba(var(--rgb),.15);color:var(--primary)}
+#dChart{display:block;width:100%;height:220px}
+.cta{position:absolute;left:0;right:0;bottom:0;padding:14px 20px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--bg) 35%)}
+.buy{width:100%;height:54px;border-radius:16px;font-size:17px;font-weight:800;color:#000;background:linear-gradient(90deg,var(--primary),var(--primary2));box-shadow:0 10px 30px rgba(var(--rgb),.35);transition:transform .2s}
+.buy:active{transform:scale(.98)}
+.buy:disabled{background:#3a3a44;color:rgba(255,255,255,.5);box-shadow:none;cursor:not-allowed}
+.pop{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:24px;visibility:hidden;opacity:0;transition:opacity .3s}
+.pop.on{visibility:visible;opacity:1}
+.pop-bd{position:absolute;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.pop-card{position:relative;width:100%;max-width:340px;padding:26px 22px 20px;border-radius:24px;text-align:center;background:rgba(20,22,35,.92);border:1px solid var(--line);box-shadow:0 30px 60px rgba(0,0,0,.6);transform:scale(.9);transition:transform .3s}
+.pop.on .pop-card{transform:none}
+.pop-badge{display:inline-block;font-size:12px;font-weight:900;letter-spacing:1px;padding:5px 14px;border-radius:99px;background:#06C755;color:#fff}
+.pop-card h3{font-size:19px;font-weight:800;margin-top:12px}
+.pop-sub{font-size:12px;color:var(--faint);margin-top:4px}
+.qr{position:relative;width:200px;height:200px;margin:18px auto;border-radius:18px;background:#fff;padding:12px;overflow:hidden}
+.qr img{width:100%;height:100%;object-fit:contain;display:block}
+.qr-empty{position:absolute;inset:0;display:none;align-items:center;justify-content:center;color:#666;font-size:13px}
+.qr::after{content:'';position:absolute;left:12px;right:12px;height:2px;top:12px;background:linear-gradient(90deg,transparent,#06C755,transparent);animation:scan 2.4s ease-in-out infinite}
+@keyframes scan{50%{top:calc(100% - 14px)}}
+.idrow{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.08);border:1px solid var(--line)}
+.idrow span{font-size:12px;color:var(--faint);flex:none}
+.idrow b{font-size:15px;flex:1;text-align:left;word-break:break-all}
+.idrow button{font-size:12px;padding:6px 12px;border-radius:99px;background:rgba(6,199,85,.18);color:#4ade80;font-weight:700;flex:none}
+.tip{margin-top:16px;font-size:14px;line-height:1.6}
+.pop-close{margin-top:18px;width:100%;height:46px;border-radius:14px;background:rgba(255,255,255,.08);border:1px solid var(--line);font-size:15px}
+@media(min-width:768px){
+  .hero,.row-head{max-width:1100px;margin:0 auto}
+  .card{flex-basis:200px}
+  .panel{inset:4vh auto 4vh 50%;width:480px;transform:translate(-50%,110%);border-radius:24px;border:1px solid var(--line);overflow:hidden}
+  .sheet.on .panel{transform:translate(-50%,0)}
+}
+</style>
+</head>
+<body>
+<div class="aurora"><i></i><i></i><i></i></div>
+<div class="gridbg"></div>
+
+<header class="header">
+  <div class="brand">
+    <div class="brand-logo" id="brandLogo"></div>
+    <div>
+      <div class="brand-name" id="brandName">Encore Films</div>
+      <div class="brand-sub" id="brandSub">숏드라마 투자 플랫폼</div>
+    </div>
+  </div>
+  <div class="live"><b></b>LIVE</div>
+</header>
+
+<main class="main">
+  <section class="hero">
+    <div class="kicker">SHORT DRAMA COPYRIGHT MARKET</div>
+    <h1 class="hero-title">숏드라마 판권<br>실시간 시세</h1>
+    <p class="hero-meta" id="updated">불러오는 중…</p>
+    <div class="sum">
+      <div><b id="sumWorks">-</b><span>등록 작품</span></div>
+      <div><b id="sumAvail">-</b><span>구매 가능</span></div>
+      <div><b id="sumUp">-</b><span>전일 대비 상승</span></div>
+    </div>
+  </section>
+
+  <div class="row-head"><h2>인기 숏드라마</h2><span>밀어서 더 보기 →</span></div>
+  <div class="rail" id="rail"></div>
+  <footer class="foot" id="foot">© Encore Films</footer>
+</main>
+
+<div class="sheet" id="sheet">
+  <div class="sheet-bd" onclick="closeDetail()"></div>
+  <div class="panel">
+    <button class="close" onclick="closeDetail()" aria-label="닫기">×</button>
+    <div class="scroll" id="sheetScroll">
+      <div class="d-hero"><div class="d-bg" id="dBg"></div><div class="d-poster" id="dPoster"></div></div>
+      <div class="d-body">
+        <h2 class="d-title" id="dTitle"></h2>
+        <div class="d-price"><b id="dPrice"></b><span class="chg" id="dChg"></span><small>전일 대비</small></div>
+        <p class="d-desc" id="dDesc"></p>
+        <div class="d-stats">
+          <div class="d-stat"><span>판매 / 총량</span><b id="dSold"></b></div>
+          <div class="d-stat"><span>잔여 판권</span><b id="dRemain"></b></div>
+          <div class="d-stat"><span>15일 최고가</span><b id="dHigh"></b></div>
+          <div class="d-stat"><span>15일 최저가</span><b id="dLow"></b></div>
+        </div>
+        <div class="bar d-prog"><i id="dBar"></i></div>
+        <div class="chart-box">
+          <div class="chart-head"><b>15일 가격 추이</b><span>일봉</span></div>
+          <canvas id="dChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="cta"><button class="buy" id="buyBtn" onclick="openLine()">구매 신청하기</button></div>
+  </div>
+</div>
+
+<div class="pop" id="linePop">
+  <div class="pop-bd" onclick="closeLine()"></div>
+  <div class="pop-card">
+    <div class="pop-badge">LINE</div>
+    <h3 id="lineDrama"></h3>
+    <p class="pop-sub" id="lineSub"></p>
+    <div class="qr"><img id="lineQr" alt="LINE QR"><div class="qr-empty" id="qrEmpty">QR 코드 준비 중</div></div>
+    <div class="idrow"><span>LINE ID</span><b id="lineId"></b><button id="copyBtn" onclick="copyId()">복사</button></div>
+    <p class="tip">LINE에서 구매 상세 내용을 문의해 주세요</p>
+    <button class="pop-close" onclick="closeLine()">닫기</button>
+  </div>
+</div>
+
+<script>
+const SB_URL = 'https://unsxprbxztpgholjojkh.supabase.co';
+const SB_KEY = 'sb_publishable_b4pX34u4nPo9AH9ggRJ1PQ_S6DUPw-S';
+
+const THEMES = [
+  {p:'#00d4ff',s:'#3b82f6',bg:'#070b1f'},{p:'#b794f6',s:'#6d28d9',bg:'#0f0820'},
+  {p:'#e5e7eb',s:'#6b7280',bg:'#000000'},{p:'#ff6b9d',s:'#7c3aed',bg:'#0b0a1f'},
+  {p:'#3b82f6',s:'#1e40af',bg:'#0b1120'},{p:'#9ca3af',s:'#4b5563',bg:'#111318'},
+  {p:'#fbbf24',s:'#b45309',bg:'#0e0c08'},{p:'#10b981',s:'#047857',bg:'#04140f'},
+  {p:'#f4b6a6',s:'#b76e79',bg:'#140d10'},{p:'#fb7185',s:'#be185d',bg:'#140810'},
+  {p:'#fb923c',s:'#c2410c',bg:'#120b06'},{p:'#a78bfa',s:'#7c3aed',bg:'#0f0c1c'},
+  {p:'#bae6fd',s:'#38bdf8',bg:'#08111d'},{p:'#0ea5e9',s:'#0369a1',bg:'#031424'},
+  {p:'#cbd5e1',s:'#64748b',bg:'#0f141c'},{p:'#818cf8',s:'#3730a3',bg:'#020617'}
+];
+
+const $ = id => document.getElementById(id);
+let DRAMAS = [], S = {}, current = null;
+
+function logoSVG(id){
+  return `<svg viewBox="0 0 32 32" fill="none"><defs><linearGradient id="${id}" x1="4" y1="2" x2="28" y2="30" gradientUnits="userSpaceOnUse"><stop offset="0" style="stop-color:var(--primary)"/><stop offset="1" style="stop-color:var(--primary2)"/></linearGradient></defs><path d="M16 2.5 27.5 9v14L16 29.5 4.5 23V9z" fill="rgba(255,255,255,.06)" stroke="url(#${id})" stroke-width="1.6" stroke-linejoin="round"/><path d="M14.5 10.5H9.5v11h5M9.5 16h4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M17.5 21.5v-11h5M17.5 16h4" stroke="url(#${id})" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+$('brandLogo').innerHTML = logoSVG('efg');
+
+function esc(s){return String(s ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function hexRgb(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');const n=parseInt(h,16);return [(n>>16)&255,(n>>8)&255,n&255].join(',')}
+function applyTheme(i){
+  const t = THEMES[i] || THEMES[0], r = document.documentElement.style;
+  r.setProperty('--primary',t.p); r.setProperty('--primary2',t.s);
+  r.setProperty('--bg',t.bg); r.setProperty('--rgb',hexRgb(t.p));
+  document.querySelector('meta[name=theme-color]').setAttribute('content',t.bg);
+}
+
+function todayKST(){return new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'})}
+function shiftDate(d,n){const t=new Date(d+'T00:00:00Z');t.setUTCDate(t.getUTCDate()+n);return t.toISOString().slice(0,10)}
+function fmtN(n){return Number(n||0).toLocaleString('ko-KR')}
+function fmtPrice(v){if(v===null||v===undefined)return '—';return (S.currency ?? '$')+Number(v).toLocaleString('en-US',{maximumFractionDigits:2})}
+function calcChg(p){if(p.length<2)return null;const a=p[p.length-2].price,b=p[p.length-1].price;return a?(b-a)/a*100:null}
+function chgCls(c){return c===null||c===0?'flat':c>0?'up':'down'}
+function chgText(c){return c===null?'—':(c>0?'▲ ':c<0?'▼ ':'')+Math.abs(c).toFixed(2)+'%'}
+function posterHTML(d){
+  if(d.poster_url) return `<img src="${esc(d.poster_url)}" alt="${esc(d.title)}" loading="lazy">`;
+  const ch=(d.title||'?').trim().charAt(0)||'?';
+  return `<div class="ph"><b>${esc(ch)}</b><span>POSTER</span></div>`;
+}
+
+async function sb(path){
+  const r = await fetch(SB_URL+'/rest/v1/'+path,{headers:{apikey:SB_KEY}});
+  if(!r.ok) throw new Error(r.status+' '+await r.text());
+  return r.json();
+}
+
+async function load(){
+  const since = shiftDate(todayKST(),-60);
+  const [dramas,hist,sets] = await Promise.all([
+    sb('dramas?select=*&order=sort_order.asc,id.asc'),
+    sb('price_history?select=drama_id,price_date,price&price_date=gte.'+since+'&order=price_date.desc&limit=2000'),
+    sb('settings?id=eq.1&select=*')
+  ]);
+  const by = {};
+  hist.forEach(h=>{(by[h.drama_id]=by[h.drama_id]||[]).push({date:h.price_date,price:Number(h.price)})});
+  applySettings(sets[0]||{});
+  DRAMAS = dramas.map(d=>{
+    const pts=(by[d.id]||[]).slice(0,15).reverse();
+    const total=Number(d.total_shares)||0, sold=Math.min(Number(d.sold_shares)||0,total);
+    return {...d,total,sold,remain:Math.max(0,total-sold),pts,price:pts.length?pts[pts.length-1].price:null,chg:calcChg(pts)};
+  });
+  render();
+  $('updated').textContent='업데이트 '+new Date().toLocaleTimeString('ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit'})+' (KST)';
+}
+
+function applySettings(s){
+  S = s;
+  applyTheme(Number(s.theme)||0);
+  const name=s.site_title||'Encore Films', sub=s.site_subtitle ?? '숏드라마 투자 플랫폼';
+  $('brandName').textContent=name; $('brandSub').textContent=sub;
+  $('foot').textContent='© '+name;
+  document.title = sub ? name+' · '+sub : name;
+  $('brandLogo').innerHTML = s.logo_url ? `<img src="${esc(s.logo_url)}" alt="">` : logoSVG('efg');
+}
+
+function cardHTML(d,i){
+  const pct=d.total?Math.round(d.sold/d.total*100):0;
+  return `<div class="card${d.remain<=0?' out':''}" style="animation-delay:${i*70}ms" onclick="openDetail(${d.id})">
+    <div class="poster">${posterHTML(d)}<span class="chg ${chgCls(d.chg)}">${chgText(d.chg)}</span>${d.remain<=0?'<span class="tag-out">품절</span>':''}</div>
+    <div class="cb">
+      <div class="ct">${esc(d.title||'제목 미정')}</div>
+      <div class="cp">${fmtPrice(d.price)}</div>
+      <canvas class="spark" id="sp${d.id}"></canvas>
+      <div class="bar"><i style="width:${pct}%"></i></div>
+      <div class="bm"><span>판매 ${fmtN(d.sold)} / ${fmtN(d.total)}</span><span>잔여 ${fmtN(d.remain)}</span></div>
+    </div></div>`;
+}
+
+function render(){
+  const rail=$('rail');
+  if(!DRAMAS.length){rail.innerHTML='<div class="empty">등록된 작품이 없습니다</div>';return}
+  rail.innerHTML=DRAMAS.map(cardHTML).join('');
+  requestAnimationFrame(()=>DRAMAS.forEach((d,i)=>{
+    const c=$('sp'+d.id); if(c) setTimeout(()=>drawChart(c,d.pts,false),300+i*70);
+  }));
+  $('sumWorks').textContent=DRAMAS.length;
+  $('sumAvail').textContent=DRAMAS.filter(d=>d.remain>0).length;
+  $('sumUp').textContent=DRAMAS.filter(d=>d.chg>0).length;
+}
+
+function showSkeleton(){
+  $('rail').innerHTML=Array.from({length:4},(_,i)=>`<div class="card sk" style="animation-delay:${i*70}ms"><div class="poster"></div><div class="cb"><div class="ln" style="width:70%"></div><div class="ln" style="width:45%;height:18px"></div><div class="ln" style="height:40px"></div></div></div>`).join('');
+}
+
+function drawChart(cv,pts,full){
+  const w=cv.clientWidth,h=cv.clientHeight; if(!w||!h) return;
+  const dpr=Math.min(window.devicePixelRatio||1,3);
+  cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);
+  const ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+  const cs=getComputedStyle(document.documentElement);
+  const pc=cs.getPropertyValue('--primary').trim(), rgb=cs.getPropertyValue('--rgb').trim();
+  const tok=(cv._t=(cv._t||0)+1);
+  if(!pts.length){
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle='rgba(255,255,255,.35)'; ctx.font=(full?13:11)+'px Pretendard,sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('가격 데이터 준비 중',w/2,h/2); return;
+  }
+  const vals=pts.map(p=>p.price);
+  let max=Math.max(...vals),min=Math.min(...vals);
+  if(max===min){const d=Math.abs(max)*0.05||1;max+=d;min-=d}
+  const padT=full?16:6,padB=full?26:6,padL=full?6:4,padR=full?52:4,cw=w-padL-padR,ch=h-padT-padB;
+  const X=i=>padL+(pts.length===1?cw/2:i*cw/(pts.length-1));
+  const Y=v=>padT+(1-(v-min)/(max-min))*ch;
+  const t0=performance.now(), dur=full?900:700;
+  function frame(t){
+    if(tok!==cv._t) return;
+    const k=Math.min(1,(t-t0)/dur), e=1-Math.pow(1-k,3);
+    ctx.clearRect(0,0,w,h);
+    if(full){
+      ctx.strokeStyle='rgba(255,255,255,.06)'; ctx.lineWidth=1;
+      ctx.fillStyle='rgba(255,255,255,.45)'; ctx.font='10px Pretendard,sans-serif'; ctx.textAlign='left'; ctx.textBaseline='middle';
+      for(let g=0;g<=4;g++){
+        const y=padT+g*ch/4, v=max-(max-min)*g/4;
+        ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(w-padR,y); ctx.stroke();
+        ctx.fillText(fmtPrice(v),w-padR+6,y);
+      }
+      ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+      const idx=[...new Set([0,Math.floor((pts.length-1)/2),pts.length-1])];
+      idx.forEach(i=>ctx.fillText(pts[i].date.slice(5).replace('-','/'),X(i),h-6));
+    }
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0,0,padL+cw*e+2,h); ctx.clip();
+    const grad=ctx.createLinearGradient(0,padT,0,padT+ch);
+    grad.addColorStop(0,`rgba(${rgb},.35)`); grad.addColorStop(1,`rgba(${rgb},0)`);
+    ctx.beginPath();
+    pts.forEach((p,i)=>i?ctx.lineTo(X(i),Y(p.price)):ctx.moveTo(X(i),Y(p.price)));
+    ctx.lineTo(X(pts.length-1),padT+ch); ctx.lineTo(X(0),padT+ch); ctx.closePath();
+    ctx.fillStyle=grad; ctx.fill();
+    ctx.beginPath();
+    pts.forEach((p,i)=>i?ctx.lineTo(X(i),Y(p.price)):ctx.moveTo(X(i),Y(p.price)));
+    ctx.strokeStyle=pc; ctx.lineWidth=full?2.5:1.8; ctx.lineJoin='round'; ctx.lineCap='round';
+    ctx.shadowColor=pc; ctx.shadowBlur=full?10:6; ctx.stroke();
+    ctx.restore();
+    if(k>=1){
+      const lx=X(pts.length-1), ly=Y(vals[vals.length-1]);
+      ctx.beginPath(); ctx.arc(lx,ly,full?8:5,0,Math.PI*2); ctx.fillStyle=`rgba(${rgb},.25)`; ctx.fill();
+      ctx.beginPath(); ctx.arc(lx,ly,full?4:2.5,0,Math.PI*2); ctx.fillStyle=pc; ctx.fill();
+    } else requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+function openDetail(id){
+  const d=DRAMAS.find(x=>x.id===id); if(!d) return;
+  current=d;
+  $('dBg').style.backgroundImage=d.poster_url?`url("${d.poster_url.replace(/"/g,'%22')}")`:'none';
+  $('dPoster').innerHTML=posterHTML(d);
+  $('dTitle').textContent=d.title||'제목 미정';
+  $('dPrice').textContent=fmtPrice(d.price);
+  const c=$('dChg'); c.className='chg '+chgCls(d.chg); c.textContent=chgText(d.chg);
+  $('dDesc').textContent=d.description||'작품 소개 준비 중입니다.';
+  $('dSold').textContent=fmtN(d.sold)+' / '+fmtN(d.total);
+  $('dRemain').textContent=fmtN(d.remain)+' 주';
+  const v=d.pts.map(p=>p.price);
+  $('dHigh').textContent=v.length?fmtPrice(Math.max(...v)):'—';
+  $('dLow').textContent=v.length?fmtPrice(Math.min(...v)):'—';
+  $('dBar').style.width='0%';
+  const b=$('buyBtn');
+  if(d.remain<=0){b.disabled=true;b.textContent='품절'}
+  else{b.disabled=false;b.textContent='구매 신청하기'}
+  $('sheetScroll').scrollTop=0;
+  $('sheet').classList.add('on');
+  document.body.style.overflow='hidden';
+  setTimeout(()=>{
+    $('dBar').style.width=(d.total?Math.round(d.sold/d.total*100):0)+'%';
+    drawChart($('dChart'),d.pts,true);
+  },380);
+}
+function closeDetail(){$('sheet').classList.remove('on');document.body.style.overflow='';current=null}
+
+function openLine(){
+  if(!current||current.remain<=0) return;
+  $('lineDrama').textContent=current.title||'';
+  $('lineSub').textContent='현재가 '+fmtPrice(current.price)+' · 잔여 '+fmtN(current.remain)+'주';
+  $('lineId').textContent=S.line_id||'@encorefilms';
+  $('copyBtn').textContent='복사';
+  if(S.line_qr_url){$('lineQr').src=S.line_qr_url;$('lineQr').style.display='block';$('qrEmpty').style.display='none'}
+  else{$('lineQr').style.display='none';$('qrEmpty').style.display='flex'}
+  $('linePop').classList.add('on');
+}
+function closeLine(){$('linePop').classList.remove('on')}
+
+function copyId(){
+  const t=$('lineId').textContent, done=()=>{$('copyBtn').textContent='복사됨 ✓'};
+  if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(t).then(done).catch(fb)}else fb();
+  function fb(){const a=document.createElement('textarea');a.value=t;a.style.position='fixed';a.style.opacity='0';document.body.appendChild(a);a.select();try{document.execCommand('copy');done()}catch(e){}a.remove()}
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('linePop').classList.contains('on'))closeLine();else closeDetail()}});
+let rt;
+window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{
+  DRAMAS.forEach(d=>{const c=$('sp'+d.id);if(c)drawChart(c,d.pts,false)});
+  if(current) drawChart($('dChart'),current.pts,true);
+},200)});
+
+showSkeleton();
+load().catch(err=>{
+  console.error(err);
+  $('updated').textContent='연결 오류';
+  $('rail').innerHTML='<div class="empty">데이터를 불러올 수 없습니다<br><small style="opacity:.6;word-break:break-all">'+esc(err.message).slice(0,160)+'</small></div>';
+});
+setInterval(()=>{load().catch(()=>{})},60000);
+</script>
+</body>
+</html>
