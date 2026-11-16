@@ -378,6 +378,9 @@ header.adm-header{position:sticky;top:0;z-index:100;background:rgba(10,14,26,.92
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+// ★ IIFE：把所有代码包在函数作用域里，避免 const supabase 与 CDN 全局变量冲突
+(function(){
+
 const SB_URL = 'https://unsxprbxztpgholjojkh.supabase.co';
 const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVuc3hwcmJ4enRwZ2hvbGpvamtoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ4MDk3OTQsImV4cCI6MjExMDM4NTc5NH0.oGtTGf2uFuq41fV-Wn6aHNdDnCBGBomJIZ1yAbmyWtY';
 const PASSWORD_PINYIN = 'niudehua';
@@ -402,7 +405,7 @@ const THEMES = [
   {n:'午夜黑',p:'#818cf8',s:'#3730a3',bg:'#020617'}
 ];
 
-// ★ 关键修复：用 window.supabase 避免变量名与库全局冲突
+// ★ 在 IIFE 内部声明，不再与全局 window.supabase 冲突
 const supabase = window.supabase.createClient(SB_URL, SB_ANON);
 const $ = id => document.getElementById(id);
 let DRAMAS = [], SETTINGS = {}, currentTheme = 0, pendingPosterUrl = '', pendingLogoUrl = '', pendingQrUrl = '';
@@ -429,6 +432,11 @@ function doLogout(){
   $('pwInput').value = '';
   $('loginErr').textContent = '';
 }
+
+// ★ 因为 IIFE 内部函数无法直接被 HTML onclick 调用，需要挂到 window 上
+window.doLogin = doLogin;
+window.doLogout = doLogout;
+
 $('pwInput').addEventListener('keydown', e => { if(e.key === 'Enter') doLogin(); });
 
 // ===== TABS =====
@@ -439,6 +447,7 @@ function switchTab(id, btn){
   btn.classList.add('active');
   if(id === 'prices') loadPriceSelects();
 }
+window.switchTab = switchTab;
 
 // ===== TOAST =====
 let toastTimer;
@@ -460,37 +469,31 @@ async function sbGet(table, query={}){
   if(error) throw new Error(error.message);
   return data;
 }
-
 async function sbInsert(table, body){
   const {data, error} = await supabase.from(table).insert(body).select();
   if(error) throw new Error(error.message);
   return data;
 }
-
 async function sbUpdate(table, id, body){
   const {data, error} = await supabase.from(table).update(body).eq('id', id).select();
   if(error) throw new Error(error.message);
   return data;
 }
-
 async function sbUpsert(table, body, conflictCol){
   const opts = conflictCol ? {onConflict: conflictCol} : {};
   const {data, error} = await supabase.from(table).upsert(body, opts).select();
   if(error) throw new Error(error.message);
   return data;
 }
-
 async function sbDelete(table, id){
   const {error} = await supabase.from(table).delete().eq('id', id);
   if(error) throw new Error(error.message);
 }
-
 async function sbUpload(bucket, path, file){
   const {data, error} = await supabase.storage.from(bucket).upload(path, file, {upsert: true});
   if(error) throw new Error(error.message);
   return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
 }
-
 function todayKST(){
   return new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
 }
@@ -578,6 +581,8 @@ function closeEditModal(){
   $('editModal').classList.remove('on');
   document.body.style.overflow = '';
 }
+window.openEditModal = openEditModal;
+window.closeEditModal = closeEditModal;
 
 async function saveDrama(){
   const id = $('editId').value;
@@ -588,11 +593,8 @@ async function saveDrama(){
   const sort = parseInt($('editSort').value)||0;
   const initPrice = parseFloat($('editPrice').value)||null;
   const posterUrl = $('posterUrl').value.trim() || pendingPosterUrl || (id ? DRAMAS.find(d=>d.id==id)?.poster_url||null : null);
-
   if(!title){ toast('请填写剧名','err'); return; }
-
   const payload = { title, description:desc, poster_url:posterUrl, total_shares:total, sold_shares:sold, sort_order:sort };
-
   try{
     let dramaId = id ? parseInt(id) : null;
     if(id){
@@ -610,6 +612,7 @@ async function saveDrama(){
     await loadDramas();
   } catch(e){ toast('保存失败：'+e.message,'err'); }
 }
+window.saveDrama = saveDrama;
 
 async function deleteDrama(){
   const id = $('editId').value;
@@ -623,6 +626,7 @@ async function deleteDrama(){
     await loadDramas();
   } catch(e){ toast('删除失败：'+e.message,'err'); }
 }
+window.deleteDrama = deleteDrama;
 
 // ===== IMAGE UPLOAD =====
 async function uploadImage(input, type){
@@ -635,18 +639,15 @@ async function uploadImage(input, type){
     const url = await sbUpload('media', path, file);
     if(type === 'poster'){
       pendingPosterUrl = url;
-      const prev = $('posterPreview');
-      prev.src = url; prev.style.display = 'block';
+      $('posterPreview').src = url; $('posterPreview').style.display = 'block';
       $('posterUrl').value = url;
     } else if(type === 'logo'){
       pendingLogoUrl = url;
-      const prev = $('logoPreview');
-      prev.src = url; prev.style.display = 'block';
+      $('logoPreview').src = url; $('logoPreview').style.display = 'block';
       $('logoUrl').value = url;
     } else if(type === 'qr'){
       pendingQrUrl = url;
-      const prev = $('qrPreview');
-      prev.src = url; prev.style.display = 'block';
+      $('qrPreview').src = url; $('qrPreview').style.display = 'block';
       $('qrUrl').value = url;
     }
     toast('上传成功 ✓');
@@ -655,6 +656,7 @@ async function uploadImage(input, type){
     console.error(e);
   }
 }
+window.uploadImage = uploadImage;
 
 function previewPosterUrl(){
   const url = $('posterUrl').value.trim();
@@ -675,6 +677,9 @@ function previewQrUrl(){
   if(url){ prev.src=url; prev.style.display='block'; }
   else { prev.src=''; prev.style.display='none'; }
 }
+window.previewPosterUrl = previewPosterUrl;
+window.previewLogoUrl = previewLogoUrl;
+window.previewQrUrl = previewQrUrl;
 
 // ===== PRICE =====
 function loadPriceSelects(){
@@ -721,6 +726,7 @@ async function loadPriceHistory(){
     } else { $('priceHistoryCard').style.display='none'; }
   } catch(e){ toast('加载失败：'+e.message,'err'); }
 }
+window.loadPriceHistory = loadPriceHistory;
 
 async function savePrice(){
   const id = $('priceSelect').value;
@@ -735,6 +741,7 @@ async function savePrice(){
     await loadDramas();
   } catch(e){ toast('保存失败：'+e.message,'err'); }
 }
+window.savePrice = savePrice;
 
 async function deletePrice(rowId){
   if(!confirm('删除这条价格记录？')) return;
@@ -745,6 +752,7 @@ async function deletePrice(rowId){
     await loadDramas();
   } catch(e){ toast('删除失败：'+e.message,'err'); }
 }
+window.deletePrice = deletePrice;
 
 // ===== SETTINGS =====
 async function loadSettings(){
@@ -781,6 +789,7 @@ async function saveSettings(){
     toast('设置已保存 ✓');
   } catch(e){ toast('保存失败：'+e.message,'err'); }
 }
+window.saveSettings = saveSettings;
 
 // ===== THEME =====
 function buildThemeGrid(){
@@ -798,6 +807,7 @@ function selectTheme(i){
   currentTheme = i;
   updateThemeGrid();
 }
+window.selectTheme = selectTheme;
 
 // ===== SETUP SQL =====
 function buildSetupSQL(){
@@ -868,6 +878,7 @@ function copySql(){
     a.remove();
   }
 }
+window.copySql = copySql;
 
 async function testConnection(){
   const r = $('connResult');
@@ -881,9 +892,12 @@ async function testConnection(){
     r.style.color = 'var(--danger)';
   }
 }
+window.testConnection = testConnection;
 
 $('editModal').addEventListener('click', e => { if(e.target === $('editModal')) closeEditModal(); });
 document.addEventListener('keydown', e => { if(e.key==='Escape') closeEditModal(); });
+
+})(); // ★ IIFE 结束
 </script>
 </body>
 </html>
