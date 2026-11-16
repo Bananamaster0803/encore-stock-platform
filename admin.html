@@ -1,438 +1,935 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#070b1f">
-<title>Encore Films · 숏드라마 투자 플랫폼</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Encore Films 后台管理</title>
 <style>
-:root{--primary:#00d4ff;--primary2:#3b82f6;--bg:#070b1f;--rgb:0,212,255;--line:rgba(255,255,255,.1);--text:#fff;--faint:rgba(255,255,255,.55);--up:#ff4d6d;--down:#3b82f6}
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{background:var(--bg);color:var(--text);font-family:Pretendard,-apple-system,'Apple SD Gothic Neo',sans-serif;transition:background .5s}
-body{min-height:100vh;overflow-x:hidden}
-button{border:0;background:none;color:inherit;font:inherit;cursor:pointer}
-.aurora{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
-.aurora i{position:absolute;border-radius:50%;filter:blur(80px);opacity:.35;animation:float 14s ease-in-out infinite}
-.aurora i:nth-child(1){width:320px;height:320px;background:var(--primary);top:-120px;left:-80px}
-.aurora i:nth-child(2){width:260px;height:260px;background:var(--primary2);top:40%;right:-120px;animation-delay:-5s}
-.aurora i:nth-child(3){width:220px;height:220px;background:var(--primary);bottom:-100px;left:30%;opacity:.2;animation-delay:-9s}
-@keyframes float{50%{transform:translate(30px,40px) scale(1.1)}}
-.gridbg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:32px 32px;mask-image:linear-gradient(to bottom,#000,transparent 70%);-webkit-mask-image:linear-gradient(to bottom,#000,transparent 70%)}
-.header{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:calc(12px + env(safe-area-inset-top)) 18px 12px;background:rgba(0,0,0,.25);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}
-.brand{display:flex;align-items:center;gap:10px}
-.brand-logo{width:36px;height:36px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 0 8px rgba(var(--rgb),.5))}
-.brand-logo svg,.brand-logo img{width:100%;height:100%;object-fit:contain;border-radius:8px}
-.brand-name{font-size:16px;font-weight:800;letter-spacing:.5px}
-.brand-sub{font-size:11px;color:var(--faint);margin-top:1px}
-.live{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:1px;padding:5px 10px;border-radius:99px;border:1px solid rgba(var(--rgb),.4);color:var(--primary);background:rgba(var(--rgb),.08)}
-.live b{width:6px;height:6px;border-radius:50%;background:var(--primary);box-shadow:0 0 8px var(--primary);animation:blink 1.4s infinite}
-@keyframes blink{50%{opacity:.2}}
-.main{position:relative;z-index:1;padding-bottom:40px}
-.hero{padding:28px 18px 8px}
-.kicker{font-size:10px;letter-spacing:2.5px;color:var(--primary);font-weight:700}
-.hero-title{font-size:28px;font-weight:800;line-height:1.25;margin-top:8px;background:linear-gradient(120deg,#fff 30%,var(--primary));-webkit-background-clip:text;background-clip:text;color:transparent}
-.hero-meta{font-size:12px;color:var(--faint);margin-top:8px}
-.sum{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
-.sum div{padding:14px 10px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid var(--line);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);text-align:center}
-.sum b{display:block;font-size:22px;font-weight:800;color:var(--primary)}
-.sum span{font-size:11px;color:var(--faint)}
-.row-head{display:flex;justify-content:space-between;align-items:baseline;padding:26px 18px 12px}
-.row-head h2{font-size:18px;font-weight:800}
-.row-head span{font-size:12px;color:var(--faint)}
-.rail{display:flex;gap:14px;overflow-x:auto;padding:4px 18px 18px;scroll-snap-type:x mandatory;scrollbar-width:none}
-.rail::-webkit-scrollbar{display:none}
-.card{flex:0 0 168px;scroll-snap-align:start;border-radius:18px;overflow:hidden;background:rgba(255,255,255,.05);border:1px solid var(--line);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);cursor:pointer;transition:transform .25s,border-color .25s;animation:rise .6s both}
-.card:active{transform:scale(.97)}
-.card:hover{border-color:rgba(var(--rgb),.5)}
-@keyframes rise{from{opacity:0;transform:translateY(20px)}}
-.poster{position:relative;aspect-ratio:2/3;background:linear-gradient(160deg,rgba(var(--rgb),.25),rgba(0,0,0,.6));overflow:hidden}
-.poster img{width:100%;height:100%;object-fit:cover;display:block}
-.ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
-.ph b{font-size:56px;font-weight:900;color:rgba(255,255,255,.85);text-shadow:0 0 30px rgba(var(--rgb),.8)}
-.ph span{font-size:10px;letter-spacing:3px;color:var(--faint)}
-.poster::after{content:'';position:absolute;inset:auto 0 0 0;height:40%;background:linear-gradient(transparent,rgba(0,0,0,.6))}
-.chg{display:inline-block;font-size:11px;font-weight:800;padding:4px 8px;border-radius:8px}
-.chg.up{color:var(--up);background:rgba(255,77,109,.15)}
-.chg.down{color:#60a5fa;background:rgba(59,130,246,.15)}
-.chg.flat{color:var(--faint);background:rgba(255,255,255,.08)}
-.poster .chg{position:absolute;top:8px;left:8px;z-index:2;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-.tag-out{position:absolute;top:8px;right:8px;z-index:2;font-size:11px;font-weight:800;padding:4px 8px;border-radius:8px;background:rgba(0,0,0,.7);color:#fff}
-.card.out .poster img,.card.out .ph{filter:grayscale(1);opacity:.6}
-.cb{padding:12px}
-.ct{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cp{font-size:18px;font-weight:800;margin-top:4px;color:var(--primary)}
-.spark{display:block;width:100%;height:40px;margin:8px 0}
-.bar{height:5px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden}
-.bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--primary2),var(--primary));transition:width 1s}
-.bm{display:flex;justify-content:space-between;font-size:10px;color:var(--faint);margin-top:6px}
-.sk .poster{animation:shim 1.2s infinite}
-.sk .ln{height:12px;border-radius:6px;background:rgba(255,255,255,.08);margin-bottom:8px;animation:shim 1.2s infinite}
-@keyframes shim{50%{opacity:.4}}
-.empty{width:100%;padding:40px 10px;text-align:center;color:var(--faint);font-size:14px;line-height:1.7}
-.foot{text-align:center;font-size:11px;color:var(--faint);padding:30px 0 10px}
-.sheet{position:fixed;inset:0;z-index:50;visibility:hidden}
-.sheet.on{visibility:visible}
-.sheet-bd{position:absolute;inset:0;background:rgba(0,0,0,.6);opacity:0;transition:opacity .3s}
-.sheet.on .sheet-bd{opacity:1}
-.panel{position:absolute;inset:0;background:var(--bg);display:flex;flex-direction:column;transform:translateY(100%);transition:transform .4s cubic-bezier(.2,.8,.2,1)}
-.sheet.on .panel{transform:none}
-.grab{display:none}
-.close{position:absolute;top:calc(12px + env(safe-area-inset-top));right:14px;z-index:5;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.5);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);font-size:24px;line-height:1}
-.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
-.d-hero{position:relative;height:420px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden}
-.d-bg{position:absolute;inset:-20px;background-size:cover;background-position:center;filter:blur(30px) brightness(.5);background-color:rgba(var(--rgb),.15)}
-.d-hero::after{content:'';position:absolute;inset:auto 0 0 0;height:50%;background:linear-gradient(transparent,var(--bg))}
-.d-poster{position:relative;z-index:2;width:200px;aspect-ratio:2/3;border-radius:16px;overflow:hidden;margin-bottom:20px;box-shadow:0 20px 50px rgba(0,0,0,.6),0 0 0 1px var(--line);background:linear-gradient(160deg,rgba(var(--rgb),.3),rgba(0,0,0,.6))}
-.d-poster img{width:100%;height:100%;object-fit:cover}
-.d-body{padding:4px 20px 120px}
-.d-title{font-size:24px;font-weight:800;text-align:center}
-.d-price{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;flex-wrap:wrap}
-.d-price b{font-size:30px;font-weight:900;color:var(--primary)}
-.d-price small{font-size:11px;color:var(--faint)}
-.d-desc{font-size:14px;line-height:1.75;color:rgba(255,255,255,.8);margin-top:18px;white-space:pre-wrap}
-.d-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}
-.d-stat{padding:14px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid var(--line)}
-.d-stat span{display:block;font-size:11px;color:var(--faint)}
-.d-stat b{display:block;font-size:17px;font-weight:800;margin-top:4px}
-.d-prog{margin-top:14px;height:7px}
-.chart-box{margin-top:20px;padding:16px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
-.chart-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.chart-head b{font-size:15px}
-.chart-head span{font-size:11px;padding:3px 8px;border-radius:6px;background:rgba(var(--rgb),.15);color:var(--primary)}
-#dChart{display:block;width:100%;height:220px}
-.cta{position:absolute;left:0;right:0;bottom:0;padding:14px 20px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--bg) 35%)}
-.buy{width:100%;height:54px;border-radius:16px;font-size:17px;font-weight:800;color:#000;background:linear-gradient(90deg,var(--primary),var(--primary2));box-shadow:0 10px 30px rgba(var(--rgb),.35);transition:transform .2s}
-.buy:active{transform:scale(.98)}
-.buy:disabled{background:#3a3a44;color:rgba(255,255,255,.5);box-shadow:none;cursor:not-allowed}
-.pop{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:24px;visibility:hidden;opacity:0;transition:opacity .3s}
-.pop.on{visibility:visible;opacity:1}
-.pop-bd{position:absolute;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
-.pop-card{position:relative;width:100%;max-width:340px;padding:26px 22px 20px;border-radius:24px;text-align:center;background:rgba(20,22,35,.92);border:1px solid var(--line);box-shadow:0 30px 60px rgba(0,0,0,.6);transform:scale(.9);transition:transform .3s}
-.pop.on .pop-card{transform:none}
-.pop-badge{display:inline-block;font-size:12px;font-weight:900;letter-spacing:1px;padding:5px 14px;border-radius:99px;background:#06C755;color:#fff}
-.pop-card h3{font-size:19px;font-weight:800;margin-top:12px}
-.pop-sub{font-size:12px;color:var(--faint);margin-top:4px}
-.qr{position:relative;width:200px;height:200px;margin:18px auto;border-radius:18px;background:#fff;padding:12px;overflow:hidden}
-.qr img{width:100%;height:100%;object-fit:contain;display:block}
-.qr-empty{position:absolute;inset:0;display:none;align-items:center;justify-content:center;color:#666;font-size:13px}
-.qr::after{content:'';position:absolute;left:12px;right:12px;height:2px;top:12px;background:linear-gradient(90deg,transparent,#06C755,transparent);animation:scan 2.4s ease-in-out infinite}
-@keyframes scan{50%{top:calc(100% - 14px)}}
-.idrow{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.08);border:1px solid var(--line)}
-.idrow span{font-size:12px;color:var(--faint);flex:none}
-.idrow b{font-size:15px;flex:1;text-align:left;word-break:break-all}
-.idrow button{font-size:12px;padding:6px 12px;border-radius:99px;background:rgba(6,199,85,.18);color:#4ade80;font-weight:700;flex:none}
-.tip{margin-top:16px;font-size:14px;line-height:1.6}
-.pop-close{margin-top:18px;width:100%;height:46px;border-radius:14px;background:rgba(255,255,255,.08);border:1px solid var(--line);font-size:15px}
-@media(min-width:768px){
-  .hero,.row-head{max-width:1100px;margin:0 auto}
-  .card{flex-basis:200px}
-  .panel{inset:4vh auto 4vh 50%;width:480px;transform:translate(-50%,110%);border-radius:24px;border:1px solid var(--line);overflow:hidden}
-  .sheet.on .panel{transform:translate(-50%,0)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0a0e1a;--surface:#111827;--surface2:#1f2937;--border:#2d3748;
+  --text:#e2e8f0;--muted:#94a3b8;--faint:#4b5563;
+  --primary:#00d4ff;--primary2:#3b82f6;--danger:#f87171;--success:#34d399;--warn:#fbbf24;
+  --radius:14px;--radius-sm:8px;
 }
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;font-size:15px;line-height:1.6}
+button{cursor:pointer;border:none;background:none;color:inherit;font-family:inherit;font-size:inherit;line-height:inherit}
+input,textarea,select{font-family:inherit;font-size:inherit;color:inherit;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;width:100%;outline:none;transition:border .2s}
+input:focus,textarea:focus,select:focus{border-color:var(--primary)}
+select option{background:var(--surface2)}
+textarea{resize:vertical;min-height:80px}
+img{max-width:100%;display:block}
+a{color:var(--primary);text-decoration:none}
+
+/* LOGIN */
+#loginScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:radial-gradient(ellipse at 50% 0%,rgba(0,212,255,.12) 0%,transparent 70%),var(--bg)}
+.login-card{width:100%;max-width:360px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:36px 28px;text-align:center}
+.login-logo{width:52px;height:52px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center}
+.login-logo svg{width:52px;height:52px}
+.login-title{font-size:20px;font-weight:700;margin-bottom:4px}
+.login-sub{font-size:13px;color:var(--muted);margin-bottom:28px}
+.login-label{text-align:left;font-size:13px;color:var(--muted);margin-bottom:6px;display:block}
+.login-input{font-size:16px;padding:12px 14px;text-align:center;margin-bottom:16px}
+.login-btn{width:100%;height:48px;border-radius:var(--radius);background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;font-size:16px;font-weight:700;transition:opacity .2s}
+.login-btn:active{opacity:.8}
+.login-err{font-size:13px;color:var(--danger);margin-top:10px;min-height:18px}
+.login-shake{animation:shake .4s}
+@keyframes shake{10%,90%{transform:translateX(-3px)}30%,70%{transform:translateX(3px)}50%{transform:translateX(-3px)}}
+
+/* LAYOUT */
+#adminMain{display:none;min-height:100vh;flex-direction:column}
+header.adm-header{position:sticky;top:0;z-index:100;background:rgba(10,14,26,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 16px}
+.header-inner{display:flex;align-items:center;justify-content:space-between;height:52px}
+.header-brand{display:flex;align-items:center;gap:10px}
+.header-brand-logo{width:28px;height:28px}
+.header-brand-logo svg{width:28px;height:28px}
+.header-brand-name{font-size:15px;font-weight:700}
+.header-brand-name small{font-size:11px;color:var(--muted);font-weight:400;display:block;line-height:1}
+.logout-btn{font-size:13px;color:var(--muted);padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--border)}
+.logout-btn:active{background:var(--surface2)}
+
+/* TABS */
+.tab-bar{display:flex;overflow-x:auto;border-bottom:1px solid var(--border);background:var(--surface);scrollbar-width:none}
+.tab-bar::-webkit-scrollbar{display:none}
+.tab-btn{flex:none;padding:12px 18px;font-size:14px;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap;transition:color .2s,border-color .2s}
+.tab-btn.active{color:var(--primary);border-color:var(--primary)}
+.tab-content{display:none;padding:16px}
+.tab-content.active{display:block}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:14px}
+.section-title{font-size:16px;font-weight:700;margin-bottom:14px}
+
+/* DRAMA LIST */
+.drama-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;cursor:pointer;transition:border-color .2s}
+.drama-item:active{border-color:var(--primary)}
+.drama-thumb{width:48px;height:64px;border-radius:6px;object-fit:cover;background:var(--surface2);flex:none;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--faint);overflow:hidden}
+.drama-thumb img{width:100%;height:100%;object-fit:cover}
+.drama-meta{flex:1;min-width:0}
+.drama-name{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.drama-info-row{display:flex;gap:12px;margin-top:4px}
+.drama-info-row span{font-size:12px;color:var(--muted)}
+.drama-price{font-size:14px;font-weight:700;color:var(--primary);white-space:nowrap}
+.drama-arr{color:var(--faint);font-size:18px}
+.add-drama-btn{width:100%;height:48px;border-radius:var(--radius);border:1.5px dashed var(--border);color:var(--muted);font-size:14px;margin-top:4px;transition:border-color .2s,color .2s}
+.add-drama-btn:active{border-color:var(--primary);color:var(--primary)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);display:none;align-items:flex-end;justify-content:center}
+.modal-overlay.on{display:flex}
+.modal-sheet{width:100%;max-width:520px;background:var(--surface);border-radius:20px 20px 0 0;padding:0 0 env(safe-area-inset-bottom,0) 0;max-height:92vh;overflow-y:auto;animation:slideUp .3s cubic-bezier(.32,1.25,.5,1)}
+@media(min-width:600px){.modal-overlay{align-items:center}.modal-sheet{border-radius:20px;max-height:85vh}}
+@keyframes slideUp{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-grab{width:40px;height:4px;background:var(--border);border-radius:2px;margin:12px auto 0}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 10px}
+.modal-header h3{font-size:17px;font-weight:700}
+.modal-close{width:32px;height:32px;border-radius:50%;background:var(--surface2);font-size:18px;line-height:32px;text-align:center}
+.modal-body{padding:0 20px 24px}
+.form-row{margin-bottom:16px}
+.form-label{font-size:13px;color:var(--muted);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
+.form-label a{font-size:12px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-hint{font-size:12px;color:var(--faint);margin-top:4px}
+
+/* POSTER UPLOAD */
+.poster-upload{width:100%;height:140px;border-radius:var(--radius);border:1.5px dashed var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--muted);font-size:13px;cursor:pointer;position:relative;overflow:hidden;transition:border-color .2s}
+.poster-upload:active{border-color:var(--primary)}
+.poster-upload img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.poster-upload-icon{font-size:28px}
+.poster-upload input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.poster-url-input{margin-top:8px}
+
+/* PRICE ENTRY */
+.price-select{margin-bottom:12px}
+.price-current{background:var(--surface2);border-radius:var(--radius);padding:14px;margin-bottom:12px;text-align:center}
+.price-current .pclabel{font-size:12px;color:var(--muted);margin-bottom:4px}
+.price-current .pcvalue{font-size:24px;font-weight:700;color:var(--primary)}
+.price-current .pcchg{font-size:13px;margin-top:2px}
+.price-history-mini{margin-top:12px}
+.ph-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;gap:4px}
+.ph-row:last-child{border-bottom:none}
+.ph-date{color:var(--muted);min-width:80px}
+.ph-price{font-weight:600;flex:1}
+.ph-chg{font-size:12px;min-width:60px;text-align:right}
+.up{color:#34d399}.down{color:#f87171}.flat{color:var(--muted)}
+.ph-del{color:var(--danger);font-size:18px;padding:0 4px}
+.ph-edit{color:var(--primary);font-size:14px;padding:0 4px}
+.ph-edit-row{display:flex;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);gap:6px;flex-wrap:wrap}
+.ph-edit-row input[type=date]{width:120px;padding:5px 8px;font-size:13px;height:30px}
+.ph-edit-row input[type=number]{flex:1;min-width:100px;padding:5px 8px;font-size:13px;height:30px}
+
+/* SETTINGS */
+.setting-row{margin-bottom:18px}
+.setting-label{font-size:13px;color:var(--muted);margin-bottom:8px;display:block}
+.qr-upload{width:140px;height:140px;border-radius:var(--radius);border:1.5px dashed var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer;position:relative;overflow:hidden}
+.qr-upload img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:8px}
+.qr-upload input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.theme-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin-top:8px}
+.theme-swatch{width:100%;aspect-ratio:1;border-radius:50%;cursor:pointer;border:2.5px solid transparent;transition:transform .15s,border-color .15s}
+.theme-swatch.active{border-color:#fff;transform:scale(1.15)}
+.theme-swatch:active{transform:scale(.9)}
+.theme-name{font-size:11px;color:var(--muted);margin-top:8px;min-height:16px;text-align:center}
+
+/* BUTTONS */
+.btn{height:46px;padding:0 20px;border-radius:var(--radius);font-size:15px;font-weight:600;transition:opacity .2s,transform .1s;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn:active{opacity:.85;transform:scale(.98)}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff}
+.btn-danger{background:rgba(248,113,113,.15);color:var(--danger);border:1px solid rgba(248,113,113,.3)}
+.btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-block{width:100%}
+.btn-sm{height:34px;padding:0 14px;font-size:13px;border-radius:var(--radius-sm)}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;text-align:center}
+.stat-box b{font-size:22px;font-weight:800;color:var(--primary);display:block}
+.stat-box span{font-size:12px;color:var(--muted)}
+
+/* TOAST */
+#toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px)+20px);left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface);border:1px solid var(--border);border-radius:99px;padding:10px 20px;font-size:14px;font-weight:600;z-index:999;transition:transform .3s,opacity .3s;opacity:0;white-space:nowrap}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+#toast.ok{border-color:var(--success);color:var(--success)}
+#toast.err{border-color:var(--danger);color:var(--danger)}
+
+/* SPINNER */
+.spin{width:20px;height:20px;border:2.5px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* SETUP */
+.sql-block{background:#0d1117;border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;font-family:monospace;font-size:12px;line-height:1.7;overflow-x:auto;white-space:pre;color:#cdd9e5;margin-bottom:12px}
+.copy-sql-btn{font-size:13px;color:var(--primary);padding:0}
+
+/* SAFE AREA */
+.bottom-pad{height:calc(env(safe-area-inset-bottom,0px)+16px)}
 </style>
 </head>
 <body>
-<div class="aurora"><i></i><i></i><i></i></div>
-<div class="gridbg"></div>
 
-<header class="header">
-  <div class="brand">
-    <div class="brand-logo" id="brandLogo"></div>
-    <div>
-      <div class="brand-name" id="brandName">Encore Films</div>
-      <div class="brand-sub" id="brandSub">숏드라마 투자 플랫폼</div>
+<!-- ===== LOGIN ===== -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">
+      <svg viewBox="0 0 48 48" fill="none"><defs><linearGradient id="lg1" x1="6" y1="3" x2="42" y2="45" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#00d4ff"/><stop offset="1" stop-color="#3b82f6"/></linearGradient></defs><path d="M24 3 40.5 12.5v23L24 45 7.5 35.5v-23z" fill="rgba(0,212,255,.08)" stroke="url(#lg1)" stroke-width="2" stroke-linejoin="round"/><path d="M22 15H14v18h8M14 24h6" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M26 33V15h8M26 24h8" stroke="url(#lg1)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
+    <div class="login-title">Encore Films</div>
+    <div class="login-sub">后台管理系统</div>
+    <label class="login-label">管理密码</label>
+    <input class="login-input" id="pwInput" type="text" placeholder="请输入密码" autocomplete="off">
+    <button class="login-btn" onclick="doLogin()">登 录</button>
+    <div class="login-err" id="loginErr"></div>
   </div>
-  <div class="live"><b></b>LIVE</div>
-</header>
+</div>
 
-<main class="main">
-  <section class="hero">
-    <div class="kicker">SHORT DRAMA COPYRIGHT MARKET</div>
-    <h1 class="hero-title">숏드라마 판권<br>실시간 시세</h1>
-    <p class="hero-meta" id="updated">불러오는 중…</p>
-    <div class="sum">
-      <div><b id="sumWorks">-</b><span>등록 작품</span></div>
-      <div><b id="sumAvail">-</b><span>구매 가능</span></div>
-      <div><b id="sumUp">-</b><span>전일 대비 상승</span></div>
+<!-- ===== ADMIN MAIN ===== -->
+<div id="adminMain">
+  <header class="adm-header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <div class="header-brand-logo">
+          <svg viewBox="0 0 32 32" fill="none"><defs><linearGradient id="lg2" x1="4" y1="2" x2="28" y2="30" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#00d4ff"/><stop offset="1" stop-color="#3b82f6"/></linearGradient></defs><path d="M16 2.5 27.5 9v14L16 29.5 4.5 23V9z" fill="rgba(0,212,255,.08)" stroke="url(#lg2)" stroke-width="1.6" stroke-linejoin="round"/><path d="M14.5 10.5H9.5v11h5M9.5 16h4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M17.5 21.5v-11h5M17.5 16h4" stroke="url(#lg2)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="header-brand-name">Encore Films<small>后台管理</small></div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">退出</button>
     </div>
-  </section>
+  </header>
 
-  <div class="row-head"><h2>인기 숏드라마</h2><span>밀어서 더 보기 →</span></div>
-  <div class="rail" id="rail"></div>
-  <footer class="foot" id="foot">© Encore Films</footer>
-</main>
+  <div class="tab-bar" id="tabBar">
+    <button class="tab-btn active" onclick="switchTab('dramas',this)">📽 短剧管理</button>
+    <button class="tab-btn" onclick="switchTab('prices',this)">📈 价格录入</button>
+    <button class="tab-btn" onclick="switchTab('settings',this)">⚙️ 网站设置</button>
+    <button class="tab-btn" onclick="switchTab('setup',this)">🛠 初始化</button>
+  </div>
 
-<div class="sheet" id="sheet">
-  <div class="sheet-bd" onclick="closeDetail()"></div>
-  <div class="panel">
-    <button class="close" onclick="closeDetail()" aria-label="닫기">×</button>
-    <div class="scroll" id="sheetScroll">
-      <div class="d-hero"><div class="d-bg" id="dBg"></div><div class="d-poster" id="dPoster"></div></div>
-      <div class="d-body">
-        <h2 class="d-title" id="dTitle"></h2>
-        <div class="d-price"><b id="dPrice"></b><span class="chg" id="dChg"></span><small>전일 대비</small></div>
-        <p class="d-desc" id="dDesc"></p>
-        <div class="d-stats">
-          <div class="d-stat"><span>판매 / 총량</span><b id="dSold"></b></div>
-          <div class="d-stat"><span>잔여 판권</span><b id="dRemain"></b></div>
-          <div class="d-stat"><span>15일 최고가</span><b id="dHigh"></b></div>
-          <div class="d-stat"><span>15일 최저가</span><b id="dLow"></b></div>
+  <!-- TAB: 短剧管理 -->
+  <div class="tab-content active" id="tabDramas">
+    <div class="stats-row">
+      <div class="stat-box"><b id="stTotal">-</b><span>已登记作品</span></div>
+      <div class="stat-box"><b id="stAvail">-</b><span>尚有余量</span></div>
+      <div class="stat-box"><b id="stSold">-</b><span>总已售股数</span></div>
+      <div class="stat-box"><b id="stUp">-</b><span>今日上涨</span></div>
+    </div>
+    <div class="section-title">作品列表</div>
+    <div id="dramaList"><div style="text-align:center;padding:40px;color:var(--muted)"><div class="spin"></div><div style="margin-top:12px;font-size:13px">加载中…</div></div></div>
+    <button class="add-drama-btn" onclick="openEditModal(null)">＋ 添加新作品</button>
+    <div class="bottom-pad"></div>
+  </div>
+
+  <!-- TAB: 价格录入 -->
+  <div class="tab-content" id="tabPrices">
+    <div class="card">
+      <div class="card-title">录入今日价格</div>
+      <div class="form-row">
+        <div class="form-label">选择作品</div>
+        <select id="priceSelect" onchange="loadPriceHistory()">
+          <option value="">— 请选择 —</option>
+        </select>
+      </div>
+      <div id="priceCurrentBox" style="display:none">
+        <div class="price-current">
+          <div class="pclabel">当前最新价</div>
+          <div class="pcvalue" id="pcValue">—</div>
+          <div class="pcchg" id="pcChg"></div>
         </div>
-        <div class="bar d-prog"><i id="dBar"></i></div>
-        <div class="chart-box">
-          <div class="chart-head"><b>15일 가격 추이</b><span>일봉</span></div>
-          <canvas id="dChart"></canvas>
+        <div class="form-row">
+          <div class="form-label">今日价格（$）<span id="todayDateLabel" style="color:var(--faint);font-size:12px"></span></div>
+          <input type="number" id="priceInput" step="0.01" min="0" placeholder="输入今日价格">
         </div>
+        <button class="btn btn-primary btn-block" onclick="savePrice()">保存今日价格</button>
       </div>
     </div>
-    <div class="cta"><button class="buy" id="buyBtn" onclick="openLine()">구매 신청하기</button></div>
+    <div class="card" id="priceHistoryCard" style="display:none">
+      <div class="card-title">近期价格记录 <span style="font-size:11px;font-weight:400;color:var(--faint)">点击 ✏️ 修改历史价格与日期</span></div>
+      <div id="priceHistoryList"></div>
+    </div>
+    <div class="bottom-pad"></div>
+  </div>
+
+  <!-- TAB: 网站设置 -->
+  <div class="tab-content" id="tabSettings">
+    <div class="card">
+      <div class="card-title">网站信息</div>
+      <div class="setting-row">
+        <label class="setting-label">网站标题</label>
+        <input type="text" id="siteTitle" placeholder="Encore Films">
+      </div>
+      <div class="setting-row">
+        <label class="setting-label">副标题（韩文）</label>
+        <input type="text" id="siteSub" placeholder="숏드라마 투자 플랫폼">
+      </div>
+      <div class="setting-row">
+        <label class="setting-label">货币符号</label>
+        <input type="text" id="siteCurrency" placeholder="$" style="max-width:80px">
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">网站 LOGO</div>
+      <div class="setting-row">
+        <label class="setting-label">上传 LOGO 图片</label>
+        <label class="qr-upload" id="logoUploadArea">
+          <span style="font-size:28px">🖼</span>
+          <span>点击上传</span>
+          <img id="logoPreview" src="" alt="" style="display:none">
+          <input type="file" accept="image/*" onchange="uploadImage(this,'logo')">
+        </label>
+        <div class="form-hint" style="margin-top:8px">或直接粘贴图片链接：</div>
+        <input type="url" id="logoUrl" placeholder="https://..." style="margin-top:6px" oninput="previewLogoUrl()">
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">LINE 联系设置</div>
+      <div class="setting-row">
+        <label class="setting-label">LINE 二维码图片</label>
+        <label class="qr-upload" id="qrUploadArea">
+          <span style="font-size:28px">📷</span>
+          <span>点击上传 QR</span>
+          <img id="qrPreview" src="" alt="" style="display:none">
+          <input type="file" accept="image/*" onchange="uploadImage(this,'qr')">
+        </label>
+        <div class="form-hint" style="margin-top:8px">或直接粘贴图片链接：</div>
+        <input type="url" id="qrUrl" placeholder="https://..." style="margin-top:6px" oninput="previewQrUrl()">
+      </div>
+      <div class="setting-row">
+        <label class="setting-label">LINE ID</label>
+        <input type="text" id="lineId" placeholder="@encorefilms">
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">主题颜色 <span style="font-weight:400;font-size:12px;color:var(--muted)" id="themeName"></span></div>
+      <div class="theme-grid" id="themeGrid"></div>
+    </div>
+    <button class="btn btn-primary btn-block" onclick="saveSettings()" style="margin-top:4px">保存所有设置</button>
+    <div class="bottom-pad"></div>
+  </div>
+
+  <!-- TAB: 初始化 -->
+  <div class="tab-content" id="tabSetup">
+    <div class="card">
+      <div class="card-title">数据库初始化 SQL</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">第一次使用时，请在 Supabase 控制台 → SQL Editor 中运行以下 SQL 建表，运行一次即可。</p>
+      <button class="copy-sql-btn" onclick="copySql()">📋 复制 SQL</button>
+      <div class="sql-block" id="sqlBlock"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">存储桶初始化</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">图片上传需要在 Supabase → Storage 里创建一个公开桶，名称填 <b style="color:var(--text)">media</b>，Policy 选 Public。</p>
+    </div>
+    <div class="card">
+      <div class="card-title">快速检测连接</div>
+      <button class="btn btn-ghost btn-block" onclick="testConnection()">检测数据库连接</button>
+      <div id="connResult" style="margin-top:12px;font-size:13px;text-align:center"></div>
+    </div>
+    <div class="bottom-pad"></div>
   </div>
 </div>
 
-<div class="pop" id="linePop">
-  <div class="pop-bd" onclick="closeLine()"></div>
-  <div class="pop-card">
-    <div class="pop-badge">LINE</div>
-    <h3 id="lineDrama"></h3>
-    <p class="pop-sub" id="lineSub"></p>
-    <div class="qr"><img id="lineQr" alt="LINE QR"><div class="qr-empty" id="qrEmpty">QR 코드 준비 중</div></div>
-    <div class="idrow"><span>LINE ID</span><b id="lineId"></b><button id="copyBtn" onclick="copyId()">복사</button></div>
-    <p class="tip">LINE에서 구매 상세 내용을 문의해 주세요</p>
-    <button class="pop-close" onclick="closeLine()">닫기</button>
+<!-- ===== EDIT DRAMA MODAL ===== -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal-sheet">
+    <div class="modal-grab"></div>
+    <div class="modal-header">
+      <h3 id="editModalTitle">添加作品</h3>
+      <button class="modal-close" onclick="closeEditModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editId">
+      <div class="form-row">
+        <div class="form-label">海报图片 <span style="color:var(--faint);font-size:12px">推荐 2:3 比例（如800×1200）</span></div>
+        <label class="poster-upload" id="posterUploadArea">
+          <span class="poster-upload-icon">🎬</span>
+          <span>点击上传封面</span>
+          <img id="posterPreview" src="" alt="" style="display:none">
+          <input type="file" accept="image/*" onchange="uploadImage(this,'poster')">
+        </label>
+        <input type="url" id="posterUrl" class="poster-url-input" placeholder="或直接粘贴图片链接 https://..." oninput="previewPosterUrl()">
+      </div>
+      <div class="form-row">
+        <div class="form-label">剧名（韩文）</div>
+        <input type="text" id="editTitle" placeholder="예：첫사랑 판권">
+      </div>
+      <div class="form-row">
+        <div class="form-label">作品简介</div>
+        <textarea id="editDesc" placeholder="韩文或中文简介…"></textarea>
+      </div>
+      <div class="form-grid">
+        <div class="form-row">
+          <div class="form-label">总股数</div>
+          <input type="number" id="editTotal" min="1" placeholder="1000">
+        </div>
+        <div class="form-row">
+          <div class="form-label">已售股数</div>
+          <input type="number" id="editSold" min="0" placeholder="0">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-label">排序（数字越小越靠前）</div>
+        <input type="number" id="editSort" min="0" placeholder="0">
+      </div>
+      <div class="form-row">
+        <div class="form-label">今日价格（$，首次录入）</div>
+        <input type="number" id="editPrice" step="0.01" min="0" placeholder="0.00">
+        <div class="form-hint">如已在价格录入中添加过可留空</div>
+      </div>
+      <button class="btn btn-primary btn-block" onclick="saveDrama()">保存作品</button>
+      <button class="btn btn-danger btn-block" id="deleteDramaBtn" style="margin-top:8px;display:none" onclick="deleteDrama()">删除此作品</button>
+      <div style="height:16px"></div>
+    </div>
   </div>
 </div>
+
+<div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+(function(){
+
 const SB_URL = 'https://unsxprbxztpgholjojkh.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVuc3hwcmJ4enRwZ2hvbGpvamtoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ4MDk3OTQsImV4cCI6MjExMDM4NTc5NH0.oGtTGf2uFuq41fV-Wn6aHNdDnCBGBomJIZ1yAbmyWtY';
+const SB_SVC = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVuc3hwcmJ4enRwZ2hvbGpvamtoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5NDgwOTc5NCwiZXhwIjoyMTEwMzg1Nzk0fQ.Xw2NOTEvZEK4PE1D6hNBCC3j4nWTV942GKrxzsSZhVI';
+const PASSWORD_PINYIN = 'niudehua';
+const PASSWORD_CHINESE = '牛得滑';
 
 const THEMES = [
-  {p:'#00d4ff',s:'#3b82f6',bg:'#070b1f'},{p:'#b794f6',s:'#6d28d9',bg:'#0f0820'},
-  {p:'#e5e7eb',s:'#6b7280',bg:'#000000'},{p:'#ff6b9d',s:'#7c3aed',bg:'#0b0a1f'},
-  {p:'#3b82f6',s:'#1e40af',bg:'#0b1120'},{p:'#9ca3af',s:'#4b5563',bg:'#111318'},
-  {p:'#fbbf24',s:'#b45309',bg:'#0e0c08'},{p:'#10b981',s:'#047857',bg:'#04140f'},
-  {p:'#f4b6a6',s:'#b76e79',bg:'#140d10'},{p:'#fb7185',s:'#be185d',bg:'#140810'},
-  {p:'#fb923c',s:'#c2410c',bg:'#120b06'},{p:'#a78bfa',s:'#7c3aed',bg:'#0f0c1c'},
-  {p:'#bae6fd',s:'#38bdf8',bg:'#08111d'},{p:'#0ea5e9',s:'#0369a1',bg:'#031424'},
-  {p:'#cbd5e1',s:'#64748b',bg:'#0f141c'},{p:'#818cf8',s:'#3730a3',bg:'#020617'}
+  {n:'极光蓝',p:'#00d4ff',s:'#3b82f6',bg:'#070b1f'},
+  {n:'星云紫',p:'#b794f6',s:'#6d28d9',bg:'#0f0820'},
+  {n:'太空黑',p:'#e5e7eb',s:'#6b7280',bg:'#000000'},
+  {n:'霓虹渐变',p:'#ff6b9d',s:'#7c3aed',bg:'#0b0a1f'},
+  {n:'商务蓝',p:'#3b82f6',s:'#1e40af',bg:'#0b1120'},
+  {n:'石墨灰',p:'#9ca3af',s:'#4b5563',bg:'#111318'},
+  {n:'金融金',p:'#fbbf24',s:'#b45309',bg:'#0e0c08'},
+  {n:'企业绿',p:'#10b981',s:'#047857',bg:'#04140f'},
+  {n:'玫瑰金',p:'#f4b6a6',s:'#b76e79',bg:'#140d10'},
+  {n:'樱花粉',p:'#fb7185',s:'#be185d',bg:'#140810'},
+  {n:'橙色热情',p:'#fb923c',s:'#c2410c',bg:'#120b06'},
+  {n:'葡萄紫',p:'#a78bfa',s:'#7c3aed',bg:'#0f0c1c'},
+  {n:'冰川白',p:'#bae6fd',s:'#38bdf8',bg:'#08111d'},
+  {n:'深海蓝',p:'#0ea5e9',s:'#0369a1',bg:'#031424'},
+  {n:'雾霾灰',p:'#cbd5e1',s:'#64748b',bg:'#0f141c'},
+  {n:'午夜黑',p:'#818cf8',s:'#3730a3',bg:'#020617'}
 ];
 
-const { createClient } = window.supabase;
-const sb = createClient(SB_URL, SB_KEY);
+const supabase = window.supabase.createClient(SB_URL, SB_SVC);
 const $ = id => document.getElementById(id);
-let DRAMAS = [], S = {}, current = null;
+let DRAMAS = [], SETTINGS = {}, currentTheme = 0, pendingPosterUrl = '', pendingLogoUrl = '', pendingQrUrl = '';
 
-function logoSVG(id){
-  return `<svg viewBox="0 0 32 32" fill="none"><defs><linearGradient id="${id}" x1="4" y1="2" x2="28" y2="30" gradientUnits="userSpaceOnUse"><stop offset="0" style="stop-color:var(--primary)"/><stop offset="1" style="stop-color:var(--primary2)"/></linearGradient></defs><path d="M16 2.5 27.5 9v14L16 29.5 4.5 23V9z" fill="rgba(255,255,255,.06)" stroke="url(#${id})" stroke-width="1.6" stroke-linejoin="round"/><path d="M14.5 10.5H9.5v11h5M9.5 16h4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M17.5 21.5v-11h5M17.5 16h4" stroke="url(#${id})" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-}
-$('brandLogo').innerHTML = logoSVG('efg');
-
-function esc(s){return String(s ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function hexRgb(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');const n=parseInt(h,16);return [(n>>16)&255,(n>>8)&255,n&255].join(',')}
-function applyTheme(i){
-  const t = THEMES[i] || THEMES[0], r = document.documentElement.style;
-  r.setProperty('--primary',t.p); r.setProperty('--primary2',t.s);
-  r.setProperty('--bg',t.bg); r.setProperty('--rgb',hexRgb(t.p));
-  document.querySelector('meta[name=theme-color]').setAttribute('content',t.bg);
-}
-
-function todayKST(){return new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'})}
-function shiftDate(d,n){const t=new Date(d+'T00:00:00Z');t.setUTCDate(t.getUTCDate()+n);return t.toISOString().slice(0,10)}
-function fmtN(n){return Number(n||0).toLocaleString('ko-KR')}
-function fmtPrice(v){if(v===null||v===undefined)return '—';return (S.currency ?? '$')+Number(v).toLocaleString('en-US',{maximumFractionDigits:2})}
-function calcChg(p){if(p.length<2)return null;const a=p[p.length-2].price,b=p[p.length-1].price;return a?(b-a)/a*100:null}
-function chgCls(c){return c===null||c===0?'flat':c>0?'up':'down'}
-function chgText(c){return c===null?'—':(c>0?'▲ ':c<0?'▼ ':'')+Math.abs(c).toFixed(2)+'%'}
-function posterHTML(d){
-  if(d.poster_url) return `<img src="${esc(d.poster_url)}" alt="${esc(d.title)}" loading="lazy">`;
-  const ch=(d.title||'?').trim().charAt(0)||'?';
-  return `<div class="ph"><b>${esc(ch)}</b><span>POSTER</span></div>`;
-}
-
-async function load(){
-  const since = shiftDate(todayKST(),-60);
-  const [dR, hR, sR] = await Promise.all([
-    sb.from('dramas').select('*').order('sort_order',{ascending:true}).order('id',{ascending:true}),
-    sb.from('price_history').select('drama_id,price_date,price').gte('price_date',since).order('price_date',{ascending:false}).limit(2000),
-    sb.from('settings').select('*').eq('id',1)
-  ]);
-  if(dR.error) throw new Error(dR.error.message);
-  if(hR.error) throw new Error(hR.error.message);
-  if(sR.error) throw new Error(sR.error.message);
-  const dramas = dR.data || [], hist = hR.data || [], sets = sR.data || [];
-
-  const by = {};
-  hist.forEach(h=>{(by[h.drama_id]=by[h.drama_id]||[]).push({date:h.price_date,price:Number(h.price)})});
-  applySettings(sets[0]||{});
-  DRAMAS = dramas.map(d=>{
-    const pts=(by[d.id]||[]).slice(0,15).reverse();
-    const total=Number(d.total_shares)||0, sold=Math.min(Number(d.sold_shares)||0,total);
-    return {...d,total,sold,remain:Math.max(0,total-sold),pts,price:pts.length?pts[pts.length-1].price:null,chg:calcChg(pts)};
-  });
-  render();
-  $('updated').textContent='업데이트 '+new Date().toLocaleTimeString('ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit'})+' (KST)';
-}
-
-function applySettings(s){
-  S = s;
-  applyTheme(Number(s.theme)||0);
-  const name=s.site_title||'Encore Films', sub=s.site_subtitle ?? '숏드라마 투자 플랫폼';
-  $('brandName').textContent=name; $('brandSub').textContent=sub;
-  $('foot').textContent='© '+name;
-  document.title = sub ? name+' · '+sub : name;
-  $('brandLogo').innerHTML = s.logo_url ? `<img src="${esc(s.logo_url)}" alt="">` : logoSVG('efg');
-}
-
-function cardHTML(d,i){
-  const pct=d.total?Math.round(d.sold/d.total*100):0;
-  return `<div class="card${d.remain<=0?' out':''}" style="animation-delay:${i*70}ms" onclick="openDetail(${d.id})">
-    <div class="poster">${posterHTML(d)}<span class="chg ${chgCls(d.chg)}">${chgText(d.chg)}</span>${d.remain<=0?'<span class="tag-out">품절</span>':''}</div>
-    <div class="cb">
-      <div class="ct">${esc(d.title||'제목 미정')}</div>
-      <div class="cp">${fmtPrice(d.price)}</div>
-      <canvas class="spark" id="sp${d.id}"></canvas>
-      <div class="bar"><i style="width:${pct}%"></i></div>
-      <div class="bm"><span>판매 ${fmtN(d.sold)} / ${fmtN(d.total)}</span><span>잔여 ${fmtN(d.remain)}</span></div>
-    </div></div>`;
-}
-
-function render(){
-  const rail=$('rail');
-  if(!DRAMAS.length){rail.innerHTML='<div class="empty">등록된 작품이 없습니다</div>';return}
-  rail.innerHTML=DRAMAS.map(cardHTML).join('');
-  requestAnimationFrame(()=>DRAMAS.forEach((d,i)=>{
-    const c=$('sp'+d.id); if(c) setTimeout(()=>drawChart(c,d.pts,false),300+i*70);
-  }));
-  $('sumWorks').textContent=DRAMAS.length;
-  $('sumAvail').textContent=DRAMAS.filter(d=>d.remain>0).length;
-  $('sumUp').textContent=DRAMAS.filter(d=>d.chg>0).length;
-}
-
-function showSkeleton(){
-  $('rail').innerHTML=Array.from({length:4},(_,i)=>`<div class="card sk" style="animation-delay:${i*70}ms"><div class="poster"></div><div class="cb"><div class="ln" style="width:70%"></div><div class="ln" style="width:45%;height:18px"></div><div class="ln" style="height:40px"></div></div></div>`).join('');
-}
-
-function drawChart(cv,pts,full){
-  const w=cv.clientWidth,h=cv.clientHeight; if(!w||!h) return;
-  const dpr=Math.min(window.devicePixelRatio||1,3);
-  cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);
-  const ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
-  const cs=getComputedStyle(document.documentElement);
-  const pc=cs.getPropertyValue('--primary').trim(), rgb=cs.getPropertyValue('--rgb').trim();
-  const tok=(cv._t=(cv._t||0)+1);
-  if(!pts.length){
-    ctx.clearRect(0,0,w,h);
-    ctx.fillStyle='rgba(255,255,255,.35)'; ctx.font=(full?13:11)+'px Pretendard,sans-serif';
-    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('가격 데이터 준비 중',w/2,h/2); return;
+// ===== LOGIN =====
+function doLogin(){
+  const val = $('pwInput').value.trim();
+  if(val === PASSWORD_CHINESE || val === PASSWORD_PINYIN){
+    $('loginScreen').style.display = 'none';
+    $('adminMain').style.display = 'flex';
+    $('adminMain').style.flexDirection = 'column';
+    init();
+  } else {
+    $('loginErr').textContent = '密码错误，请重试';
+    $('loginScreen').querySelector('.login-card').classList.remove('login-shake');
+    void $('loginScreen').querySelector('.login-card').offsetWidth;
+    $('loginScreen').querySelector('.login-card').classList.add('login-shake');
+    $('pwInput').value = '';
   }
-  const vals=pts.map(p=>p.price);
-  let max=Math.max(...vals),min=Math.min(...vals);
-  if(max===min){const d=Math.abs(max)*0.05||1;max+=d;min-=d}
-  const padT=full?16:6,padB=full?26:6,padL=full?6:4,padR=full?52:4,cw=w-padL-padR,ch=h-padT-padB;
-  const X=i=>padL+(pts.length===1?cw/2:i*cw/(pts.length-1));
-  const Y=v=>padT+(1-(v-min)/(max-min))*ch;
-  const t0=performance.now(), dur=full?900:700;
-  function frame(t){
-    if(tok!==cv._t) return;
-    const k=Math.min(1,(t-t0)/dur), e=1-Math.pow(1-k,3);
-    ctx.clearRect(0,0,w,h);
-    if(full){
-      ctx.strokeStyle='rgba(255,255,255,.06)'; ctx.lineWidth=1;
-      ctx.fillStyle='rgba(255,255,255,.45)'; ctx.font='10px Pretendard,sans-serif'; ctx.textAlign='left'; ctx.textBaseline='middle';
-      for(let g=0;g<=4;g++){
-        const y=padT+g*ch/4, v=max-(max-min)*g/4;
-        ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(w-padR,y); ctx.stroke();
-        ctx.fillText(fmtPrice(v),w-padR+6,y);
-      }
-      ctx.textAlign='center'; ctx.textBaseline='alphabetic';
-      const idx=[...new Set([0,Math.floor((pts.length-1)/2),pts.length-1])];
-      idx.forEach(i=>ctx.fillText(pts[i].date.slice(5).replace('-','/'),X(i),h-6));
+}
+function doLogout(){
+  $('adminMain').style.display = 'none';
+  $('loginScreen').style.display = 'flex';
+  $('pwInput').value = '';
+  $('loginErr').textContent = '';
+}
+window.doLogin = doLogin;
+window.doLogout = doLogout;
+$('pwInput').addEventListener('keydown', e => { if(e.key === 'Enter') doLogin(); });
+
+// ===== TABS =====
+function switchTab(id, btn){
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  $('tab' + id.charAt(0).toUpperCase() + id.slice(1)).classList.add('active');
+  btn.classList.add('active');
+  if(id === 'prices') loadPriceSelects();
+}
+window.switchTab = switchTab;
+
+// ===== TOAST =====
+let toastTimer;
+function toast(msg, type='ok'){
+  const t = $('toast');
+  t.textContent = msg; t.className = 'show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.className = '', 2800);
+}
+
+// ===== SUPABASE HELPERS =====
+async function sbGet(table, query={}){
+  let q = supabase.from(table).select(query.select || '*');
+  if(query.eq) for(let [k,v] of Object.entries(query.eq)) q = q.eq(k, v);
+  if(query.gte) for(let [k,v] of Object.entries(query.gte)) q = q.gte(k, v);
+  if(query.order) q = q.order(query.order.col, {ascending: query.order.asc !== false});
+  if(query.limit) q = q.limit(query.limit);
+  const {data, error} = await q;
+  if(error) throw new Error(error.message);
+  return data || [];
+}
+async function sbInsert(table, body){
+  const {data, error} = await supabase.from(table).insert(body).select();
+  if(error) throw new Error(error.message);
+  return data;
+}
+async function sbUpdate(table, id, body){
+  const {data, error} = await supabase.from(table).update(body).eq('id', id).select();
+  if(error) throw new Error(error.message);
+  return data;
+}
+async function sbUpsert(table, body, conflictCol){
+  const opts = conflictCol ? {onConflict: conflictCol} : {};
+  const {data, error} = await supabase.from(table).upsert(body, opts).select();
+  if(error) throw new Error(error.message);
+  return data;
+}
+async function sbDelete(table, id){
+  const {error} = await supabase.from(table).delete().eq('id', id);
+  if(error) throw new Error(error.message);
+}
+async function sbUpload(bucket, path, file){
+  const {data, error} = await supabase.storage.from(bucket).upload(path, file, {upsert: true});
+  if(error) throw new Error(error.message);
+  return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
+}
+function todayKST(){
+  return new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
+}
+
+// ===== INIT =====
+async function init(){
+  buildThemeGrid();
+  await Promise.all([loadDramas(), loadSettings()]);
+  buildSetupSQL();
+}
+
+// ===== DRAMAS =====
+async function loadDramas(){
+  try{
+    const since = (() => { const d=new Date(); d.setDate(d.getDate()-60); return d.toISOString().slice(0,10); })();
+    const [dramas, hist] = await Promise.all([
+      sbGet('dramas', {order: {col: 'sort_order'}}),
+      sbGet('price_history', {select: 'drama_id,price_date,price', gte: {price_date: since}, order: {col: 'price_date', asc: false}, limit: 2000})
+    ]);
+    const by = {};
+    hist.forEach(h => { (by[h.drama_id] = by[h.drama_id]||[]).push({date:h.price_date,price:Number(h.price)}); });
+    DRAMAS = dramas.map(d => {
+      const pts = (by[d.id]||[]).slice(0,15).reverse();
+      const price = pts.length ? pts[pts.length-1].price : null;
+      const chg = pts.length >= 2 ? (pts[pts.length-1].price - pts[pts.length-2].price)/pts[pts.length-2].price*100 : null;
+      return {...d, pts, price, chg};
+    });
+    renderDramaList();
+    updateStats();
+  } catch(e){ toast('加载失败：'+e.message,'err'); }
+}
+
+function renderDramaList(){
+  const el = $('dramaList');
+  if(!DRAMAS.length){ el.innerHTML='<div style="text-align:center;padding:32px;color:var(--muted);font-size:14px">暂无作品，点击下方添加</div>'; return; }
+  el.innerHTML = DRAMAS.map(d => {
+    const pct = d.total_shares ? Math.round((d.sold_shares||0)/d.total_shares*100) : 0;
+    const chgText = d.chg === null ? '—' : (d.chg>=0?'▲ ':'▼ ')+Math.abs(d.chg).toFixed(2)+'%';
+    const chgCls = d.chg === null ? 'flat' : d.chg > 0 ? 'up' : 'down';
+    return `<div class="drama-item" onclick="openEditModal(${d.id})">
+      <div class="drama-thumb">${d.poster_url?`<img src="${esc(d.poster_url)}" alt="">`:`<span>${(d.title||'?').charAt(0)}</span>`}</div>
+      <div class="drama-meta">
+        <div class="drama-name">${esc(d.title||'（未命名）')}</div>
+        <div class="drama-info-row">
+          <span>已售 ${d.sold_shares||0}/${d.total_shares||0}（${pct}%）</span>
+          <span class="${chgCls}">${chgText}</span>
+        </div>
+      </div>
+      <div class="drama-price">${d.price!==null?'$'+Number(d.price).toLocaleString('en-US',{maximumFractionDigits:2}):'—'}</div>
+      <span class="drama-arr">›</span>
+    </div>`;
+  }).join('');
+}
+
+function updateStats(){
+  $('stTotal').textContent = DRAMAS.length;
+  $('stAvail').textContent = DRAMAS.filter(d => (d.total_shares||0) > (d.sold_shares||0)).length;
+  $('stSold').textContent = DRAMAS.reduce((a,d) => a+(d.sold_shares||0), 0).toLocaleString('zh-CN');
+  $('stUp').textContent = DRAMAS.filter(d => d.chg !== null && d.chg > 0).length;
+}
+
+function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// ===== EDIT MODAL =====
+function openEditModal(id){
+  pendingPosterUrl = '';
+  const d = id ? DRAMAS.find(x => x.id===id) : null;
+  $('editModalTitle').textContent = d ? '编辑作品' : '添加新作品';
+  $('editId').value = d ? d.id : '';
+  $('editTitle').value = d ? (d.title||'') : '';
+  $('editDesc').value = d ? (d.description||'') : '';
+  $('editTotal').value = d ? (d.total_shares||'') : '';
+  $('editSold').value = d ? (d.sold_shares||'') : '';
+  $('editSort').value = d ? (d.sort_order||0) : DRAMAS.length;
+  $('editPrice').value = '';
+  $('posterUrl').value = d ? (d.poster_url||'') : '';
+  const prev = $('posterPreview');
+  if(d && d.poster_url){ prev.src=d.poster_url; prev.style.display='block'; }
+  else { prev.src=''; prev.style.display='none'; }
+  $('deleteDramaBtn').style.display = d ? 'flex' : 'none';
+  $('editModal').classList.add('on');
+  document.body.style.overflow = 'hidden';
+}
+function closeEditModal(){
+  $('editModal').classList.remove('on');
+  document.body.style.overflow = '';
+}
+window.openEditModal = openEditModal;
+window.closeEditModal = closeEditModal;
+
+async function saveDrama(){
+  const id = $('editId').value;
+  const title = $('editTitle').value.trim();
+  const desc = $('editDesc').value.trim();
+  const total = parseInt($('editTotal').value)||0;
+  const sold = parseInt($('editSold').value)||0;
+  const sort = parseInt($('editSort').value)||0;
+  const initPrice = parseFloat($('editPrice').value)||null;
+  const posterUrl = $('posterUrl').value.trim() || pendingPosterUrl || (id ? DRAMAS.find(d=>d.id==id)?.poster_url||null : null);
+  if(!title){ toast('请填写剧名','err'); return; }
+  const payload = { title, description:desc, poster_url:posterUrl, total_shares:total, sold_shares:sold, sort_order:sort };
+  try{
+    let dramaId = id ? parseInt(id) : null;
+    if(id){
+      await sbUpdate('dramas', id, payload);
+      toast('作品已更新 ✓');
+    } else {
+      const res = await sbInsert('dramas', payload);
+      dramaId = res[0]?.id;
+      toast('作品已添加 ✓');
     }
-    ctx.save();
-    ctx.beginPath(); ctx.rect(0,0,padL+cw*e+2,h); ctx.clip();
-    const grad=ctx.createLinearGradient(0,padT,0,padT+ch);
-    grad.addColorStop(0,`rgba(${rgb},.35)`); grad.addColorStop(1,`rgba(${rgb},0)`);
-    ctx.beginPath();
-    pts.forEach((p,i)=>i?ctx.lineTo(X(i),Y(p.price)):ctx.moveTo(X(i),Y(p.price)));
-    ctx.lineTo(X(pts.length-1),padT+ch); ctx.lineTo(X(0),padT+ch); ctx.closePath();
-    ctx.fillStyle=grad; ctx.fill();
-    ctx.beginPath();
-    pts.forEach((p,i)=>i?ctx.lineTo(X(i),Y(p.price)):ctx.moveTo(X(i),Y(p.price)));
-    ctx.strokeStyle=pc; ctx.lineWidth=full?2.5:1.8; ctx.lineJoin='round'; ctx.lineCap='round';
-    ctx.shadowColor=pc; ctx.shadowBlur=full?10:6; ctx.stroke();
-    ctx.restore();
-    if(k>=1){
-      const lx=X(pts.length-1), ly=Y(vals[vals.length-1]);
-      ctx.beginPath(); ctx.arc(lx,ly,full?8:5,0,Math.PI*2); ctx.fillStyle=`rgba(${rgb},.25)`; ctx.fill();
-      ctx.beginPath(); ctx.arc(lx,ly,full?4:2.5,0,Math.PI*2); ctx.fillStyle=pc; ctx.fill();
-    } else requestAnimationFrame(frame);
+    if(initPrice && dramaId){
+      await sbUpsert('price_history', [{drama_id:dramaId, price_date:todayKST(), price:initPrice}], 'drama_id,price_date');
+    }
+    closeEditModal();
+    await loadDramas();
+  } catch(e){ toast('保存失败：'+e.message,'err'); }
+}
+window.saveDrama = saveDrama;
+
+async function deleteDrama(){
+  const id = $('editId').value;
+  if(!id) return;
+  if(!confirm('确定删除这部作品？价格历史也将一起删除，无法恢复。')) return;
+  try{
+    await supabase.from('price_history').delete().eq('drama_id', id);
+    await sbDelete('dramas', id);
+    toast('已删除');
+    closeEditModal();
+    await loadDramas();
+  } catch(e){ toast('删除失败：'+e.message,'err'); }
+}
+window.deleteDrama = deleteDrama;
+
+// ===== IMAGE UPLOAD =====
+async function uploadImage(input, type){
+  const file = input.files[0];
+  if(!file) return;
+  const ext = file.name.split('.').pop();
+  const path = type+'/'+Date.now()+'.'+ext;
+  toast('上传中…','ok');
+  try{
+    const url = await sbUpload('media', path, file);
+    if(type === 'poster'){
+      pendingPosterUrl = url;
+      $('posterPreview').src = url; $('posterPreview').style.display = 'block';
+      $('posterUrl').value = url;
+    } else if(type === 'logo'){
+      pendingLogoUrl = url;
+      $('logoPreview').src = url; $('logoPreview').style.display = 'block';
+      $('logoUrl').value = url;
+    } else if(type === 'qr'){
+      pendingQrUrl = url;
+      $('qrPreview').src = url; $('qrPreview').style.display = 'block';
+      $('qrUrl').value = url;
+    }
+    toast('上传成功 ✓');
+  } catch(e){
+    toast('上传失败：'+e.message,'err');
+    console.error(e);
   }
-  requestAnimationFrame(frame);
+}
+window.uploadImage = uploadImage;
+
+function previewPosterUrl(){
+  const url = $('posterUrl').value.trim();
+  const prev = $('posterPreview');
+  if(url){ prev.src=url; prev.style.display='block'; }
+  else { prev.src=''; prev.style.display='none'; }
+  pendingPosterUrl = url;
+}
+function previewLogoUrl(){
+  const url = $('logoUrl').value.trim();
+  const prev = $('logoPreview');
+  if(url){ prev.src=url; prev.style.display='block'; }
+  else { prev.src=''; prev.style.display='none'; }
+}
+function previewQrUrl(){
+  const url = $('qrUrl').value.trim();
+  const prev = $('qrPreview');
+  if(url){ prev.src=url; prev.style.display='block'; }
+  else { prev.src=''; prev.style.display='none'; }
+}
+window.previewPosterUrl = previewPosterUrl;
+window.previewLogoUrl = previewLogoUrl;
+window.previewQrUrl = previewQrUrl;
+
+// ===== PRICE =====
+function loadPriceSelects(){
+  const sel = $('priceSelect');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">— 请选择 —</option>' +
+    DRAMAS.map(d => `<option value="${d.id}">${esc(d.title||'（未命名）')}</option>`).join('');
+  if(cur) { sel.value = cur; loadPriceHistory(); }
+  $('todayDateLabel').textContent = todayKST()+' (KST)';
 }
 
-function openDetail(id){
-  const d=DRAMAS.find(x=>x.id===id); if(!d) return;
-  current=d;
-  $('dBg').style.backgroundImage=d.poster_url?`url("${d.poster_url.replace(/"/g,'%22')}")`:'none';
-  $('dPoster').innerHTML=posterHTML(d);
-  $('dTitle').textContent=d.title||'제목 미정';
-  $('dPrice').textContent=fmtPrice(d.price);
-  const c=$('dChg'); c.className='chg '+chgCls(d.chg); c.textContent=chgText(d.chg);
-  $('dDesc').textContent=d.description||'작품 소개 준비 중입니다.';
-  $('dSold').textContent=fmtN(d.sold)+' / '+fmtN(d.total);
-  $('dRemain').textContent=fmtN(d.remain)+' 주';
-  const v=d.pts.map(p=>p.price);
-  $('dHigh').textContent=v.length?fmtPrice(Math.max(...v)):'—';
-  $('dLow').textContent=v.length?fmtPrice(Math.min(...v)):'—';
-  $('dBar').style.width='0%';
-  const b=$('buyBtn');
-  if(d.remain<=0){b.disabled=true;b.textContent='품절'}
-  else{b.disabled=false;b.textContent='구매 신청하기'}
-  $('sheetScroll').scrollTop=0;
-  $('sheet').classList.add('on');
-  document.body.style.overflow='hidden';
-  setTimeout(()=>{
-    $('dBar').style.width=(d.total?Math.round(d.sold/d.total*100):0)+'%';
-    drawChart($('dChart'),d.pts,true);
-  },380);
+async function loadPriceHistory(){
+  const id = $('priceSelect').value;
+  if(!id){ $('priceCurrentBox').style.display='none'; $('priceHistoryCard').style.display='none'; return; }
+  try{
+    const rows = await sbGet('price_history', {eq: {drama_id: id}, order: {col: 'price_date', asc: false}, limit: 30});
+    $('priceCurrentBox').style.display = 'block';
+    if(rows.length){
+      $('pcValue').textContent = '$'+Number(rows[0].price).toLocaleString('en-US',{maximumFractionDigits:2});
+      if(rows.length >= 2){
+        const chg = (rows[0].price - rows[1].price)/rows[1].price*100;
+        const cls = chg >= 0 ? 'up' : 'down';
+        $('pcChg').className = 'pcchg '+cls;
+        $('pcChg').textContent = (chg>=0?'▲ ':'▼ ')+Math.abs(chg).toFixed(2)+'% 较前日';
+      } else { $('pcChg').textContent = ''; }
+      $('priceInput').placeholder = Number(rows[0].price).toFixed(2);
+    } else {
+      $('pcValue').textContent = '—';
+      $('pcChg').textContent = '暂无数据';
+    }
+    if(rows.length){
+      $('priceHistoryCard').style.display = 'block';
+      $('priceHistoryList').innerHTML = rows.map((r,i) => {
+        const chg = i < rows.length-1 ? (r.price-rows[i+1].price)/rows[i+1].price*100 : null;
+        const cls = chg===null?'flat':chg>0?'up':'down';
+        const chgTxt = chg===null?'—':(chg>=0?'▲ ':'▼ ')+Math.abs(chg).toFixed(2)+'%';
+        return `<div class="ph-row" id="phrow-${r.id}">
+          <span class="ph-date">${r.price_date}</span>
+          <span class="ph-price">$${Number(r.price).toLocaleString('en-US',{maximumFractionDigits:2})}</span>
+          <span class="ph-chg ${cls}">${chgTxt}</span>
+          <button class="ph-edit" onclick="editPriceRow(${r.id},${r.drama_id},'${r.price_date}',${r.price})">✏️</button>
+          <button class="ph-del" onclick="deletePrice(${r.id})">×</button>
+        </div>`;
+      }).join('');
+    } else { $('priceHistoryCard').style.display='none'; }
+  } catch(e){ toast('加载失败：'+e.message,'err'); }
 }
-function closeDetail(){$('sheet').classList.remove('on');document.body.style.overflow='';current=null}
+window.loadPriceHistory = loadPriceHistory;
 
-function openLine(){
-  if(!current||current.remain<=0) return;
-  $('lineDrama').textContent=current.title||'';
-  $('lineSub').textContent='현재가 '+fmtPrice(current.price)+' · 잔여 '+fmtN(current.remain)+'주';
-  $('lineId').textContent=S.line_id||'@encorefilms';
-  $('copyBtn').textContent='복사';
-  if(S.line_qr_url){$('lineQr').src=S.line_qr_url;$('lineQr').style.display='block';$('qrEmpty').style.display='none'}
-  else{$('lineQr').style.display='none';$('qrEmpty').style.display='flex'}
-  $('linePop').classList.add('on');
+// ★ 编辑历史价格 — 可以同时修改日期和价格
+function editPriceRow(rowId, dramaId, date, price){
+  const row = document.getElementById('phrow-'+rowId);
+  if(!row) return;
+  row.className = 'ph-edit-row';
+  row.innerHTML = `
+    <input type="date" id="phedit-date-${rowId}" value="${date}" style="width:140px;padding:5px 8px;font-size:13px;height:30px">
+    <input type="number" step="0.01" min="0" id="phedit-price-${rowId}" value="${price}" style="flex:1;min-width:100px;padding:5px 8px;font-size:13px;height:30px">
+    <button onclick="savePriceEdit(${rowId},${dramaId})" style="color:var(--success);font-size:13px;font-weight:700;padding:0 8px;white-space:nowrap">保存</button>
+    <button onclick="loadPriceHistory()" style="color:var(--muted);font-size:13px;padding:0 6px;white-space:nowrap">取消</button>
+  `;
+  const inp = document.getElementById('phedit-price-'+rowId);
+  if(inp){ inp.focus(); inp.select(); }
 }
-function closeLine(){$('linePop').classList.remove('on')}
+window.editPriceRow = editPriceRow;
 
-function copyId(){
-  const t=$('lineId').textContent, done=()=>{$('copyBtn').textContent='복사됨 ✓'};
-  if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(t).then(done).catch(fb)}else fb();
-  function fb(){const a=document.createElement('textarea');a.value=t;a.style.position='fixed';a.style.opacity='0';document.body.appendChild(a);a.select();try{document.execCommand('copy');done()}catch(e){}a.remove()}
+async function savePriceEdit(rowId, dramaId){
+  const inpDate = document.getElementById('phedit-date-'+rowId);
+  const inpPrice = document.getElementById('phedit-price-'+rowId);
+  if(!inpDate || !inpPrice) return;
+  const newDate = inpDate.value;
+  const newPrice = parseFloat(inpPrice.value);
+  if(!newDate || !newPrice || newPrice <= 0){ toast('请输入有效日期和价格','err'); return; }
+  try{
+    // 删除旧记录
+    await sbDelete('price_history', rowId);
+    // 插入新记录（日期可能不同）
+    await sbUpsert('price_history', [{drama_id: dramaId, price_date: newDate, price: newPrice}], 'drama_id,price_date');
+    toast('价格已更新 ✓');
+    await loadPriceHistory();
+    await loadDramas();
+  } catch(e){ toast('更新失败：'+e.message,'err'); }
+}
+window.savePriceEdit = savePriceEdit;
+
+async function savePrice(){
+  const id = $('priceSelect').value;
+  const price = parseFloat($('priceInput').value);
+  if(!id){ toast('请选择作品','err'); return; }
+  if(!price || price <= 0){ toast('请输入有效价格','err'); return; }
+  try{
+    await sbUpsert('price_history', [{drama_id:parseInt(id), price_date:todayKST(), price}], 'drama_id,price_date');
+    $('priceInput').value = '';
+    toast('价格已保存 ✓');
+    await loadPriceHistory();
+    await loadDramas();
+  } catch(e){ toast('保存失败：'+e.message,'err'); }
+}
+window.savePrice = savePrice;
+
+async function deletePrice(rowId){
+  if(!confirm('删除这条价格记录？')) return;
+  try{
+    await sbDelete('price_history', rowId);
+    toast('已删除');
+    await loadPriceHistory();
+    await loadDramas();
+  } catch(e){ toast('删除失败：'+e.message,'err'); }
+}
+window.deletePrice = deletePrice;
+
+// ===== SETTINGS =====
+async function loadSettings(){
+  try{
+    const rows = await sbGet('settings', {eq: {id: 1}});
+    SETTINGS = rows[0] || {};
+    $('siteTitle').value = SETTINGS.site_title || 'Encore Films';
+    $('siteSub').value = SETTINGS.site_subtitle || '숏드라마 투자 플랫폼';
+    $('siteCurrency').value = SETTINGS.currency || '$';
+    $('lineId').value = SETTINGS.line_id || '';
+    $('logoUrl').value = SETTINGS.logo_url || '';
+    $('qrUrl').value = SETTINGS.line_qr_url || '';
+    if(SETTINGS.logo_url){ $('logoPreview').src=SETTINGS.logo_url; $('logoPreview').style.display='block'; }
+    if(SETTINGS.line_qr_url){ $('qrPreview').src=SETTINGS.line_qr_url; $('qrPreview').style.display='block'; }
+    currentTheme = Number(SETTINGS.theme)||0;
+    updateThemeGrid();
+  } catch(e){ console.error('Settings load:', e); }
 }
 
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('linePop').classList.contains('on'))closeLine();else closeDetail()}});
-let rt;
-window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{
-  DRAMAS.forEach(d=>{const c=$('sp'+d.id);if(c)drawChart(c,d.pts,false)});
-  if(current) drawChart($('dChart'),current.pts,true);
-},200)});
+async function saveSettings(){
+  const payload = {
+    id: 1,
+    site_title: $('siteTitle').value.trim() || 'Encore Films',
+    site_subtitle: $('siteSub').value.trim(),
+    currency: $('siteCurrency').value.trim() || '$',
+    line_id: $('lineId').value.trim(),
+    logo_url: $('logoUrl').value.trim() || null,
+    line_qr_url: $('qrUrl').value.trim() || null,
+    theme: currentTheme
+  };
+  try{
+    await sbUpsert('settings', [payload], 'id');
+    SETTINGS = payload;
+    toast('设置已保存 ✓');
+  } catch(e){ toast('保存失败：'+e.message,'err'); }
+}
+window.saveSettings = saveSettings;
 
-showSkeleton();
-load().catch(err=>{
-  console.error(err);
-  $('updated').textContent='연결 오류';
-  $('rail').innerHTML='<div class="empty">데이터를 불러올 수 없습니다<br><small style="opacity:.6;word-break:break-all">'+esc(err.message).slice(0,160)+'</small></div>';
-});
-setInterval(()=>{load().catch(()=>{})},60000);
+// ===== THEME =====
+function buildThemeGrid(){
+  const grid = $('themeGrid');
+  grid.innerHTML = THEMES.map((t,i) =>
+    `<div class="theme-swatch${i===currentTheme?' active':''}" style="background:${t.p}" title="${t.n}" onclick="selectTheme(${i})"></div>`
+  ).join('');
+  $('themeName').textContent = THEMES[currentTheme]?.n || '';
+}
+function updateThemeGrid(){
+  document.querySelectorAll('.theme-swatch').forEach((el,i) => el.classList.toggle('active', i===currentTheme));
+  $('themeName').textContent = THEMES[currentTheme]?.n || '';
+}
+function selectTheme(i){ currentTheme = i; updateThemeGrid(); }
+window.selectTheme = selectTheme;
+
+// ===== SETUP SQL =====
+function buildSetupSQL(){
+  const sql = `-- 1. 短剧表
+create table if not exists dramas (
+  id serial primary key,
+  title text,
+  description text,
+  poster_url text,
+  total_shares integer default 1000,
+  sold_shares integer default 0,
+  sort_order integer default 0,
+  created_at timestamptz default now()
+);
+
+-- 2. 价格历史表
+create table if not exists price_history (
+  id serial primary key,
+  drama_id integer references dramas(id) on delete cascade,
+  price_date date not null,
+  price numeric(12,4) not null,
+  created_at timestamptz default now(),
+  unique(drama_id, price_date)
+);
+
+-- 3. 设置表
+create table if not exists settings (
+  id integer primary key default 1,
+  site_title text default 'Encore Films',
+  site_subtitle text default '숏드라마 투자 플랫폼',
+  currency text default '$',
+  logo_url text,
+  line_qr_url text,
+  line_id text default '@encorefilms',
+  theme integer default 0
+);
+
+-- 4. 插入默认设置
+insert into settings (id) values (1)
+on conflict (id) do nothing;
+
+-- 5. 开放行级安全（前台读取）
+alter table dramas enable row level security;
+alter table price_history enable row level security;
+alter table settings enable row level security;
+
+drop policy if exists "public_read_dramas" on dramas;
+drop policy if exists "public_read_price_history" on price_history;
+drop policy if exists "public_read_settings" on settings;
+
+create policy "public_read_dramas"
+  on dramas for select using (true);
+create policy "public_read_price_history"
+  on price_history for select using (true);
+create policy "public_read_settings"
+  on settings for select using (true);`;
+  $('sqlBlock').textContent = sql;
+}
+function copySql(){
+  const sql = $('sqlBlock').textContent;
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(sql).then(()=>toast('SQL 已复制 ✓')).catch(()=>toast('复制失败','err'));
+  } else {
+    const a = document.createElement('textarea');
+    a.value = sql; a.style.cssText='position:fixed;opacity:0';
+    document.body.appendChild(a); a.select();
+    try{ document.execCommand('copy'); toast('SQL 已复制 ✓'); } catch(e){ toast('复制失败','err'); }
+    a.remove();
+  }
+}
+window.copySql = copySql;
+
+async function testConnection(){
+  const r = $('connResult');
+  r.textContent = '检测中…'; r.style.color = 'var(--muted)';
+  try{
+    const rows = await sbGet('dramas', {limit: 1});
+    r.textContent = '✅ 连接成功！数据库正常。';
+    r.style.color = 'var(--success)';
+  } catch(e){
+    r.textContent = '❌ 连接失败：'+e.message.slice(0,120);
+    r.style.color = 'var(--danger)';
+  }
+}
+window.testConnection = testConnection;
+
+$('editModal').addEventListener('click', e => { if(e.target === $('editModal')) closeEditModal(); });
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeEditModal(); });
+
+})();
 </script>
 </body>
 </html>
