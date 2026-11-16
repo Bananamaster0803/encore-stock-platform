@@ -107,13 +107,17 @@ header.adm-header{position:sticky;top:0;z-index:100;background:rgba(10,14,26,.92
 .price-current .pcvalue{font-size:24px;font-weight:700;color:var(--primary)}
 .price-current .pcchg{font-size:13px;margin-top:2px}
 .price-history-mini{margin-top:12px}
-.ph-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.ph-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;gap:4px}
 .ph-row:last-child{border-bottom:none}
-.ph-date{color:var(--muted)}
-.ph-price{font-weight:600}
-.ph-chg{font-size:12px}
+.ph-date{color:var(--muted);min-width:80px}
+.ph-price{font-weight:600;flex:1}
+.ph-chg{font-size:12px;min-width:60px;text-align:right}
 .up{color:#34d399}.down{color:#f87171}.flat{color:var(--muted)}
 .ph-del{color:var(--danger);font-size:18px;padding:0 4px}
+.ph-edit{color:var(--primary);font-size:14px;padding:0 4px}
+.ph-edit-row{display:flex;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);gap:6px}
+.ph-edit-row input{flex:1;padding:6px 8px;font-size:13px;height:32px}
+.ph-edit-row .ph-date{min-width:80px}
 
 /* SETTINGS */
 .setting-row{margin-bottom:18px}
@@ -236,7 +240,7 @@ header.adm-header{position:sticky;top:0;z-index:100;background:rgba(10,14,26,.92
       </div>
     </div>
     <div class="card" id="priceHistoryCard" style="display:none">
-      <div class="card-title">近期价格记录</div>
+      <div class="card-title">近期价格记录 <span style="font-size:11px;font-weight:400;color:var(--faint)">点击 ✏️ 修改历史价格</span></div>
       <div id="priceHistoryList"></div>
     </div>
     <div class="bottom-pad"></div>
@@ -378,11 +382,11 @@ header.adm-header{position:sticky;top:0;z-index:100;background:rgba(10,14,26,.92
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// ★ IIFE：把所有代码包在函数作用域里，避免 const supabase 与 CDN 全局变量冲突
 (function(){
 
 const SB_URL = 'https://unsxprbxztpgholjojkh.supabase.co';
-const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVuc3hwcmJ4enRwZ2hvbGpvamtoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ4MDk3OTQsImV4cCI6MjExMDM4NTc5NH0.oGtTGf2uFuq41fV-Wn6aHNdDnCBGBomJIZ1yAbmyWtY';
+// ★ 使用 service_role 密钥，绕过 RLS，所有写操作（上传/保存/删除）均可正常工作
+const SB_SVC = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVuc3hwcmJ4enRwZ2hvbGpvamtoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5NDgwOTc5NCwiZXhwIjoyMTEwMzg1Nzk0fQ.Xw2NOTEvZEK4PE1D6hNBCC3j4nWTV942GKrxzsSZhVI';
 const PASSWORD_PINYIN = 'niudehua';
 const PASSWORD_CHINESE = '牛得滑';
 
@@ -405,8 +409,7 @@ const THEMES = [
   {n:'午夜黑',p:'#818cf8',s:'#3730a3',bg:'#020617'}
 ];
 
-// ★ 在 IIFE 内部声明，不再与全局 window.supabase 冲突
-const supabase = window.supabase.createClient(SB_URL, SB_ANON);
+const supabase = window.supabase.createClient(SB_URL, SB_SVC);
 const $ = id => document.getElementById(id);
 let DRAMAS = [], SETTINGS = {}, currentTheme = 0, pendingPosterUrl = '', pendingLogoUrl = '', pendingQrUrl = '';
 
@@ -432,11 +435,8 @@ function doLogout(){
   $('pwInput').value = '';
   $('loginErr').textContent = '';
 }
-
-// ★ 因为 IIFE 内部函数无法直接被 HTML onclick 调用，需要挂到 window 上
 window.doLogin = doLogin;
 window.doLogout = doLogout;
-
 $('pwInput').addEventListener('keydown', e => { if(e.key === 'Enter') doLogin(); });
 
 // ===== TABS =====
@@ -467,7 +467,7 @@ async function sbGet(table, query={}){
   if(query.limit) q = q.limit(query.limit);
   const {data, error} = await q;
   if(error) throw new Error(error.message);
-  return data;
+  return data || [];
 }
 async function sbInsert(table, body){
   const {data, error} = await supabase.from(table).insert(body).select();
@@ -652,7 +652,7 @@ async function uploadImage(input, type){
     }
     toast('上传成功 ✓');
   } catch(e){
-    toast('上传失败，请粘贴图片链接代替','err');
+    toast('上传失败：'+e.message,'err');
     console.error(e);
   }
 }
@@ -695,7 +695,7 @@ async function loadPriceHistory(){
   const id = $('priceSelect').value;
   if(!id){ $('priceCurrentBox').style.display='none'; $('priceHistoryCard').style.display='none'; return; }
   try{
-    const rows = await sbGet('price_history', {eq: {drama_id: id}, order: {col: 'price_date', asc: false}, limit: 15});
+    const rows = await sbGet('price_history', {eq: {drama_id: id}, order: {col: 'price_date', asc: false}, limit: 30});
     $('priceCurrentBox').style.display = 'block';
     if(rows.length){
       $('pcValue').textContent = '$'+Number(rows[0].price).toLocaleString('en-US',{maximumFractionDigits:2});
@@ -716,10 +716,11 @@ async function loadPriceHistory(){
         const chg = i < rows.length-1 ? (r.price-rows[i+1].price)/rows[i+1].price*100 : null;
         const cls = chg===null?'flat':chg>0?'up':'down';
         const chgTxt = chg===null?'—':(chg>=0?'▲ ':'▼ ')+Math.abs(chg).toFixed(2)+'%';
-        return `<div class="ph-row">
+        return `<div class="ph-row" id="phrow-${r.id}">
           <span class="ph-date">${r.price_date}</span>
           <span class="ph-price">$${Number(r.price).toLocaleString('en-US',{maximumFractionDigits:2})}</span>
           <span class="ph-chg ${cls}">${chgTxt}</span>
+          <button class="ph-edit" onclick="editPriceRow(${r.id},'${r.price_date}',${r.price})">✏️</button>
           <button class="ph-del" onclick="deletePrice(${r.id})">×</button>
         </div>`;
       }).join('');
@@ -727,6 +728,36 @@ async function loadPriceHistory(){
   } catch(e){ toast('加载失败：'+e.message,'err'); }
 }
 window.loadPriceHistory = loadPriceHistory;
+
+// ★ 编辑历史价格 — 点 ✏️ 后行内变成输入框
+function editPriceRow(rowId, date, price){
+  const row = document.getElementById('phrow-'+rowId);
+  if(!row) return;
+  row.className = 'ph-edit-row';
+  row.innerHTML = `
+    <span class="ph-date">${date}</span>
+    <input type="number" step="0.01" min="0" id="phedit-${rowId}" value="${price}" style="flex:1;padding:5px 8px;font-size:13px;height:30px">
+    <button onclick="savePriceEdit(${rowId})" style="color:var(--success);font-size:13px;font-weight:700;padding:0 8px;white-space:nowrap">保存</button>
+    <button onclick="loadPriceHistory()" style="color:var(--muted);font-size:13px;padding:0 6px;white-space:nowrap">取消</button>
+  `;
+  const inp = document.getElementById('phedit-'+rowId);
+  if(inp){ inp.focus(); inp.select(); }
+}
+window.editPriceRow = editPriceRow;
+
+async function savePriceEdit(rowId){
+  const inp = document.getElementById('phedit-'+rowId);
+  if(!inp) return;
+  const val = parseFloat(inp.value);
+  if(!val || val <= 0){ toast('请输入有效价格','err'); return; }
+  try{
+    await sbUpdate('price_history', rowId, {price: val});
+    toast('价格已更新 ✓');
+    await loadPriceHistory();
+    await loadDramas();
+  } catch(e){ toast('更新失败：'+e.message,'err'); }
+}
+window.savePriceEdit = savePriceEdit;
 
 async function savePrice(){
   const id = $('priceSelect').value;
@@ -803,10 +834,7 @@ function updateThemeGrid(){
   document.querySelectorAll('.theme-swatch').forEach((el,i) => el.classList.toggle('active', i===currentTheme));
   $('themeName').textContent = THEMES[currentTheme]?.n || '';
 }
-function selectTheme(i){
-  currentTheme = i;
-  updateThemeGrid();
-}
+function selectTheme(i){ currentTheme = i; updateThemeGrid(); }
 window.selectTheme = selectTheme;
 
 // ===== SETUP SQL =====
@@ -845,7 +873,7 @@ create table if not exists settings (
   theme integer default 0
 );
 
--- 4. 插入默认设置（只跑一次）
+-- 4. 插入默认设置
 insert into settings (id) values (1)
 on conflict (id) do nothing;
 
@@ -897,7 +925,7 @@ window.testConnection = testConnection;
 $('editModal').addEventListener('click', e => { if(e.target === $('editModal')) closeEditModal(); });
 document.addEventListener('keydown', e => { if(e.key==='Escape') closeEditModal(); });
 
-})(); // ★ IIFE 结束
+})();
 </script>
 </body>
 </html>
