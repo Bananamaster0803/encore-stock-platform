@@ -376,10 +376,10 @@ header.adm-header{position:sticky;top:0;z-index:100;background:rgba(10,14,26,.92
 
 <div id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SB_URL = 'https://unsxprbxztpgholjojkh.supabase.co';
 const SB_ANON = 'sb_publishable_b4pX34u4nPo9AH9ggRJ1PQ_S6DUPw-S';
-const SB_SVC  = 'sb_secret_fWgSC__5lUQsIZkIkzjH0w_Jg043sjR';
 const PASSWORD_PINYIN = 'niudehua';
 const PASSWORD_CHINESE = '牛得滑';
 
@@ -402,6 +402,7 @@ const THEMES = [
   {n:'午夜黑',p:'#818cf8',s:'#3730a3',bg:'#020617'}
 ];
 
+const supabase = supabase.createClient(SB_URL, SB_ANON);
 const $ = id => document.getElementById(id);
 let DRAMAS = [], SETTINGS = {}, currentTheme = 0, pendingPosterUrl = '', pendingLogoUrl = '', pendingQrUrl = '';
 
@@ -448,51 +449,44 @@ function toast(msg, type='ok'){
 }
 
 // ===== SUPABASE HELPERS =====
-async function sbGet(path){
-  const r = await fetch(SB_URL+'/rest/v1/'+path, {headers:{apikey:SB_SVC, Authorization:'Bearer '+SB_SVC}});
-  if(!r.ok) throw new Error(await r.text());
-  return r.json();
+async function sbGet(table, query={}){
+  let q = supabase.from(table).select(query.select || '*');
+  if(query.eq) for(let [k,v] of Object.entries(query.eq)) q = q.eq(k, v);
+  if(query.gte) for(let [k,v] of Object.entries(query.gte)) q = q.gte(k, v);
+  if(query.order) q = q.order(query.order.col, {ascending: query.order.asc !== false});
+  if(query.limit) q = q.limit(query.limit);
+  const {data, error} = await q;
+  if(error) throw new Error(error.message);
+  return data;
 }
-async function sbPost(path, body){
-  const r = await fetch(SB_URL+'/rest/v1/'+path, {
-    method:'POST', headers:{apikey:SB_SVC, Authorization:'Bearer '+SB_SVC,
-    'Content-Type':'application/json', Prefer:'return=representation'},
-    body: JSON.stringify(body)
-  });
-  if(!r.ok) throw new Error(await r.text());
-  return r.json();
+
+async function sbInsert(table, body){
+  const {data, error} = await supabase.from(table).insert(body).select();
+  if(error) throw new Error(error.message);
+  return data;
 }
-async function sbPatch(path, body){
-  const r = await fetch(SB_URL+'/rest/v1/'+path, {
-    method:'PATCH', headers:{apikey:SB_SVC, Authorization:'Bearer '+SB_SVC,
-    'Content-Type':'application/json', Prefer:'return=representation'},
-    body: JSON.stringify(body)
-  });
-  if(!r.ok) throw new Error(await r.text());
-  return r.json();
+
+async function sbUpdate(table, id, body){
+  const {data, error} = await supabase.from(table).update(body).eq('id', id).select();
+  if(error) throw new Error(error.message);
+  return data;
 }
-async function sbUpsert(path, body){
-  const r = await fetch(SB_URL+'/rest/v1/'+path, {
-    method:'POST', headers:{apikey:SB_SVC, Authorization:'Bearer '+SB_SVC,
-    'Content-Type':'application/json', Prefer:'return=representation,resolution=merge-duplicates'},
-    body: JSON.stringify(body)
-  });
-  if(!r.ok) throw new Error(await r.text());
-  return r.json();
+
+async function sbUpsert(table, body){
+  const {data, error} = await supabase.from(table).upsert(body, {onConflict: 'id'}).select();
+  if(error) throw new Error(error.message);
+  return data;
 }
-async function sbDelete(path){
-  const r = await fetch(SB_URL+'/rest/v1/'+path, {
-    method:'DELETE', headers:{apikey:SB_SVC, Authorization:'Bearer '+SB_SVC}
-  });
-  if(!r.ok) throw new Error(await r.text());
+
+async function sbDelete(table, id){
+  const {error} = await supabase.from(table).delete().eq('id', id);
+  if(error) throw new Error(error.message);
 }
+
 async function sbUpload(bucket, path, file){
-  const r = await fetch(SB_URL+'/storage/v1/object/'+bucket+'/'+path, {
-    method:'POST', headers:{apikey:SB_SVC, Authorization:'Bearer '+SB_SVC, 'Content-Type': file.type, 'x-upsert':'true'},
-    body: file
-  });
-  if(!r.ok) throw new Error(await r.text());
-  return SB_URL+'/storage/v1/object/public/'+bucket+'/'+path;
+  const {data, error} = await supabase.storage.from(bucket).upload(path, file, {upsert: true});
+  if(error) throw new Error(error.message);
+  return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
 }
 
 function todayKST(){
@@ -511,8 +505,8 @@ async function loadDramas(){
   try{
     const since = (() => { const d=new Date(); d.setDate(d.getDate()-60); return d.toISOString().slice(0,10); })();
     const [dramas, hist] = await Promise.all([
-      sbGet('dramas?select=*&order=sort_order.asc,id.asc'),
-      sbGet('price_history?select=drama_id,price_date,price&price_date=gte.'+since+'&order=price_date.desc&limit=2000')
+      sbGet('dramas', {order: {col: 'sort_order'}}),
+      sbGet('price_history', {select: 'drama_id,price_date,price', gte: {price_date: since}, order: {col: 'price_date', asc: false}, limit: 2000})
     ]);
     const by = {};
     hist.forEach(h => { (by[h.drama_id] = by[h.drama_id]||[]).push({date:h.price_date,price:Number(h.price)}); });
@@ -600,15 +594,15 @@ async function saveDrama(){
   try{
     let dramaId = id ? parseInt(id) : null;
     if(id){
-      await sbPatch('dramas?id=eq.'+id, payload);
+      await sbUpdate('dramas', id, payload);
       toast('作品已更新 ✓');
     } else {
-      const res = await sbPost('dramas', payload);
+      const res = await sbInsert('dramas', payload);
       dramaId = res[0]?.id;
       toast('作品已添加 ✓');
     }
     if(initPrice && dramaId){
-      await sbUpsert('price_history', {drama_id:dramaId, price_date:todayKST(), price:initPrice});
+      await sbUpsert('price_history', [{drama_id:dramaId, price_date:todayKST(), price:initPrice}]);
     }
     closeEditModal();
     await loadDramas();
@@ -620,8 +614,9 @@ async function deleteDrama(){
   if(!id) return;
   if(!confirm('确定删除这部作品？价格历史也将一起删除，无法恢复。')) return;
   try{
-    await sbDelete('price_history?drama_id=eq.'+id);
-    await sbDelete('dramas?id=eq.'+id);
+    const prices = await sbGet('price_history', {eq: {drama_id: id}});
+    for(let p of prices) await sbDelete('price_history', p.id);
+    await sbDelete('dramas', id);
     toast('已删除');
     closeEditModal();
     await loadDramas();
@@ -694,7 +689,7 @@ async function loadPriceHistory(){
   const id = $('priceSelect').value;
   if(!id){ $('priceCurrentBox').style.display='none'; $('priceHistoryCard').style.display='none'; return; }
   try{
-    const rows = await sbGet('price_history?drama_id=eq.'+id+'&select=*&order=price_date.desc&limit=15');
+    const rows = await sbGet('price_history', {eq: {drama_id: id}, order: {col: 'price_date', asc: false}, limit: 15});
     $('priceCurrentBox').style.display = 'block';
     if(rows.length){
       $('pcValue').textContent = '$'+Number(rows[0].price).toLocaleString('en-US',{maximumFractionDigits:2});
@@ -732,7 +727,7 @@ async function savePrice(){
   if(!id){ toast('请选择作品','err'); return; }
   if(!price || price <= 0){ toast('请输入有效价格','err'); return; }
   try{
-    await sbUpsert('price_history', {drama_id:parseInt(id), price_date:todayKST(), price});
+    await sbUpsert('price_history', [{drama_id:parseInt(id), price_date:todayKST(), price}]);
     $('priceInput').value = '';
     toast('价格已保存 ✓');
     await loadPriceHistory();
@@ -743,7 +738,7 @@ async function savePrice(){
 async function deletePrice(rowId){
   if(!confirm('删除这条价格记录？')) return;
   try{
-    await sbDelete('price_history?id=eq.'+rowId);
+    await sbDelete('price_history', rowId);
     toast('已删除');
     await loadPriceHistory();
     await loadDramas();
@@ -753,7 +748,7 @@ async function deletePrice(rowId){
 // ===== SETTINGS =====
 async function loadSettings(){
   try{
-    const rows = await sbGet('settings?id=eq.1&select=*');
+    const rows = await sbGet('settings', {eq: {id: 1}});
     SETTINGS = rows[0] || {};
     $('siteTitle').value = SETTINGS.site_title || 'Encore Films';
     $('siteSub').value = SETTINGS.site_subtitle || '숏드라마 투자 플랫폼';
@@ -780,7 +775,7 @@ async function saveSettings(){
     theme: currentTheme
   };
   try{
-    await sbUpsert('settings', payload);
+    await sbUpsert('settings', [payload]);
     SETTINGS = payload;
     toast('设置已保存 ✓');
   } catch(e){ toast('保存失败：'+e.message,'err'); }
@@ -873,7 +868,7 @@ async function testConnection(){
   const r = $('connResult');
   r.textContent = '检测中…'; r.style.color = 'var(--muted)';
   try{
-    const rows = await sbGet('dramas?select=id&limit=1');
+    const rows = await sbGet('dramas', {limit: 1});
     r.textContent = '✅ 连接成功！数据库正常。';
     r.style.color = 'var(--success)';
   } catch(e){
