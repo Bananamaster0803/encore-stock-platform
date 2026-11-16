@@ -204,9 +204,10 @@ button{border:0;background:none;color:inherit;font:inherit;cursor:pointer}
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SB_URL = 'https://unsxprbxztpgholjojkh.supabase.co';
-const SB_KEY = 'sb_publishable_b4pX34u4nPo9AH9ggRJ1PQ_S6DUPw-S';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVuc3hwcmJ4enRwZ2hvbGpvamtoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ4MDk3OTQsImV4cCI6MjExMDM4NTc5NH0.oGtTGf2uFuq41fV-Wn6aHNdDnCBGBomJIZ1yAbmyWtY';
 
 const THEMES = [
   {p:'#00d4ff',s:'#3b82f6',bg:'#070b1f'},{p:'#b794f6',s:'#6d28d9',bg:'#0f0820'},
@@ -219,6 +220,8 @@ const THEMES = [
   {p:'#cbd5e1',s:'#64748b',bg:'#0f141c'},{p:'#818cf8',s:'#3730a3',bg:'#020617'}
 ];
 
+const { createClient } = window.supabase;
+const sb = createClient(SB_URL, SB_KEY);
 const $ = id => document.getElementById(id);
 let DRAMAS = [], S = {}, current = null;
 
@@ -249,19 +252,18 @@ function posterHTML(d){
   return `<div class="ph"><b>${esc(ch)}</b><span>POSTER</span></div>`;
 }
 
-async function sb(path){
-  const r = await fetch(SB_URL+'/rest/v1/'+path,{headers:{apikey:SB_KEY}});
-  if(!r.ok) throw new Error(r.status+' '+await r.text());
-  return r.json();
-}
-
 async function load(){
   const since = shiftDate(todayKST(),-60);
-  const [dramas,hist,sets] = await Promise.all([
-    sb('dramas?select=*&order=sort_order.asc,id.asc'),
-    sb('price_history?select=drama_id,price_date,price&price_date=gte.'+since+'&order=price_date.desc&limit=2000'),
-    sb('settings?id=eq.1&select=*')
+  const [dR, hR, sR] = await Promise.all([
+    sb.from('dramas').select('*').order('sort_order',{ascending:true}).order('id',{ascending:true}),
+    sb.from('price_history').select('drama_id,price_date,price').gte('price_date',since).order('price_date',{ascending:false}).limit(2000),
+    sb.from('settings').select('*').eq('id',1)
   ]);
+  if(dR.error) throw new Error(dR.error.message);
+  if(hR.error) throw new Error(hR.error.message);
+  if(sR.error) throw new Error(sR.error.message);
+  const dramas = dR.data || [], hist = hR.data || [], sets = sR.data || [];
+
   const by = {};
   hist.forEach(h=>{(by[h.drama_id]=by[h.drama_id]||[]).push({date:h.price_date,price:Number(h.price)})});
   applySettings(sets[0]||{});
