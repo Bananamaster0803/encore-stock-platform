@@ -152,22 +152,18 @@ header.adm-header{position:sticky;top:0;z-index:100;background:rgba(10,14,26,.92
 .stat-box b{font-size:22px;font-weight:800;color:var(--primary);display:block}
 .stat-box span{font-size:12px;color:var(--muted)}
 
-/* TOAST */
-#toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px)+20px);left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface);border:1px solid var(--border);border-radius:99px;padding:10px 20px;font-size:14px;font-weight:600;z-index:999;transition:transform .3s,opacity .3s;opacity:0;white-space:nowrap}
+/* TOAST（修复：calc 里 + 两边必须有空格，否则整行失效，提示条跑到屏幕外） */
+#toast{position:fixed;bottom:calc(env(safe-area-inset-bottom, 0px) + 20px);left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface);border:1px solid var(--border);border-radius:99px;padding:10px 20px;font-size:14px;font-weight:600;z-index:999;transition:transform .3s,opacity .3s;opacity:0;max-width:calc(100vw - 32px);text-align:center;pointer-events:none}
 #toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 #toast.ok{border-color:var(--success);color:var(--success)}
-#toast.err{border-color:var(--danger);color:var(--danger)}
+#toast.err{border-color:var(--danger);color:var(--danger);border-radius:14px}
 
 /* SPINNER */
 .spin{width:20px;height:20px;border:2.5px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* SETUP */
-.sql-block{background:#0d1117;border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;font-family:monospace;font-size:12px;line-height:1.7;overflow-x:auto;white-space:pre;color:#cdd9e5;margin-bottom:12px}
-.copy-sql-btn{font-size:13px;color:var(--primary);padding:0}
-
 /* SAFE AREA */
-.bottom-pad{height:calc(env(safe-area-inset-bottom,0px)+16px)}
+.bottom-pad{height:calc(env(safe-area-inset-bottom, 0px) + 16px)}
 </style>
 </head>
 <body>
@@ -205,7 +201,6 @@ header.adm-header{position:sticky;top:0;z-index:100;background:rgba(10,14,26,.92
     <button class="tab-btn active" onclick="switchTab('dramas',this)">📽 短剧管理</button>
     <button class="tab-btn" onclick="switchTab('prices',this)">📈 价格录入</button>
     <button class="tab-btn" onclick="switchTab('settings',this)">⚙️ 网站设置</button>
-    <button class="tab-btn" onclick="switchTab('setup',this)">🛠 初始化</button>
   </div>
 
   <!-- TAB: 短剧管理 -->
@@ -244,7 +239,6 @@ header.adm-header{position:sticky;top:0;z-index:100;background:rgba(10,14,26,.92
         </div>
         <button class="btn btn-primary btn-block" onclick="savePrice()">保存今日价格</button>
         
-        <!-- ★ 新增：批量添加历史价格 -->
         <div class="add-price-card">
           <h4>📅 批量添加历史价格</h4>
           <div class="add-price-form">
@@ -316,26 +310,6 @@ header.adm-header{position:sticky;top:0;z-index:100;background:rgba(10,14,26,.92
       <div class="theme-grid" id="themeGrid"></div>
     </div>
     <button class="btn btn-primary btn-block" onclick="saveSettings()" style="margin-top:4px">保存所有设置</button>
-    <div class="bottom-pad"></div>
-  </div>
-
-  <!-- TAB: 初始化 -->
-  <div class="tab-content" id="tabSetup">
-    <div class="card">
-      <div class="card-title">数据库初始化 SQL</div>
-      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">第一次使用时，请在 Supabase 控制台 → SQL Editor 中运行以下 SQL 建表，运行一次即可。</p>
-      <button class="copy-sql-btn" onclick="copySql()">📋 复制 SQL</button>
-      <div class="sql-block" id="sqlBlock"></div>
-    </div>
-    <div class="card">
-      <div class="card-title">存储桶初始化</div>
-      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">图片上传需要在 Supabase → Storage 里创建一个公开桶，名称填 <b style="color:var(--text)">media</b>，Policy 选 Public。</p>
-    </div>
-    <div class="card">
-      <div class="card-title">快速检测连接</div>
-      <button class="btn btn-ghost btn-block" onclick="testConnection()">检测数据库连接</button>
-      <div id="connResult" style="margin-top:12px;font-size:13px;text-align:center"></div>
-    </div>
     <div class="bottom-pad"></div>
   </div>
 </div>
@@ -470,7 +444,7 @@ function toast(msg, type='ok'){
   const t = $('toast');
   t.textContent = msg; t.className = 'show ' + type;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.className = '', 2800);
+  toastTimer = setTimeout(() => t.className = '', type === 'err' ? 6000 : 2800);
 }
 
 // ===== SUPABASE HELPERS =====
@@ -487,17 +461,20 @@ async function sbGet(table, query={}){
 async function sbInsert(table, body){
   const {data, error} = await supabase.from(table).insert(body).select();
   if(error) throw new Error(error.message);
+  if(!data || !data.length) throw new Error('数据库没有写入任何记录');
   return data;
 }
 async function sbUpdate(table, id, body){
   const {data, error} = await supabase.from(table).update(body).eq('id', id).select();
   if(error) throw new Error(error.message);
+  if(!data || !data.length) throw new Error('没有找到这条记录，未更新');
   return data;
 }
 async function sbUpsert(table, body, conflictCol){
   const opts = conflictCol ? {onConflict: conflictCol} : {};
   const {data, error} = await supabase.from(table).upsert(body, opts).select();
   if(error) throw new Error(error.message);
+  if(!data || !data.length) throw new Error('数据库没有写入任何记录');
   return data;
 }
 async function sbDelete(table, id){
@@ -517,7 +494,6 @@ function todayKST(){
 async function init(){
   buildThemeGrid();
   await Promise.all([loadDramas(), loadSettings()]);
-  buildSetupSQL();
 }
 
 // ===== DRAMAS =====
@@ -549,7 +525,7 @@ function renderDramaList(){
     const chgText = d.chg === null ? '—' : (d.chg>=0?'▲ ':'▼ ')+Math.abs(d.chg).toFixed(2)+'%';
     const chgCls = d.chg === null ? 'flat' : d.chg > 0 ? 'up' : 'down';
     return `<div class="drama-item" onclick="openEditModal(${d.id})">
-      <div class="drama-thumb">${d.poster_url?`<img src="${esc(d.poster_url)}" alt="">`:`<span>${(d.title||'?').charAt(0)}</span>`}</div>
+      <div class="drama-thumb">${d.poster_url?`<img src="${esc(d.poster_url)}" alt="">`:`<span>${esc((d.title||'?').charAt(0))}</span>`}</div>
       <div class="drama-meta">
         <div class="drama-name">${esc(d.title||'（未命名）')}</div>
         <div class="drama-info-row">
@@ -580,8 +556,8 @@ function openEditModal(id){
   $('editId').value = d ? d.id : '';
   $('editTitle').value = d ? (d.title||'') : '';
   $('editDesc').value = d ? (d.description||'') : '';
-  $('editTotal').value = d ? (d.total_shares||'') : '';
-  $('editSold').value = d ? (d.sold_shares||'') : '';
+  $('editTotal').value = d ? (d.total_shares ?? '') : '';
+  $('editSold').value = d ? (d.sold_shares ?? '') : '';
   $('editSort').value = d ? (d.sort_order||0) : DRAMAS.length;
   $('editPrice').value = '';
   $('posterUrl').value = d ? (d.poster_url||'') : '';
@@ -609,20 +585,21 @@ async function saveDrama(){
   const initPrice = parseFloat($('editPrice').value)||null;
   const posterUrl = $('posterUrl').value.trim() || pendingPosterUrl || (id ? DRAMAS.find(d=>d.id==id)?.poster_url||null : null);
   if(!title){ toast('请填写剧名','err'); return; }
+  if(total <= 0){ toast('请填写总股数','err'); return; }
+  if(sold > total){ toast('已售股数不能大于总股数','err'); return; }
   const payload = { title, description:desc, poster_url:posterUrl, total_shares:total, sold_shares:sold, sort_order:sort };
   try{
     let dramaId = id ? parseInt(id) : null;
     if(id){
-      await sbUpdate('dramas', id, payload);
-      toast('作品已更新 ✓');
+      await sbUpdate('dramas', dramaId, payload);
     } else {
       const res = await sbInsert('dramas', payload);
-      dramaId = res[0]?.id;
-      toast('作品已添加 ✓');
+      dramaId = res[0].id;
     }
     if(initPrice && dramaId){
       await sbUpsert('price_history', [{drama_id:dramaId, price_date:todayKST(), price:initPrice}], 'drama_id,price_date');
     }
+    toast(id ? '作品已更新 ✓' : '作品已添加 ✓');
     closeEditModal();
     await loadDramas();
   } catch(e){ toast('保存失败：'+e.message,'err'); }
@@ -634,7 +611,8 @@ async function deleteDrama(){
   if(!id) return;
   if(!confirm('确定删除这部作品？价格历史也将一起删除，无法恢复。')) return;
   try{
-    await supabase.from('price_history').delete().eq('drama_id', id);
+    const {error} = await supabase.from('price_history').delete().eq('drama_id', id);
+    if(error) throw new Error(error.message);
     await sbDelete('dramas', id);
     toast('已删除');
     closeEditModal();
@@ -665,7 +643,7 @@ async function uploadImage(input, type){
       $('qrPreview').src = url; $('qrPreview').style.display = 'block';
       $('qrUrl').value = url;
     }
-    toast('上传成功 ✓');
+    toast(type === 'poster' ? '上传成功 ✓ 记得点"保存作品"' : '上传成功 ✓ 记得点"保存所有设置"');
   } catch(e){
     toast('上传失败：'+e.message,'err');
     console.error(e);
@@ -719,10 +697,11 @@ async function loadPriceHistory(){
         const cls = chg >= 0 ? 'up' : 'down';
         $('pcChg').className = 'pcchg '+cls;
         $('pcChg').textContent = (chg>=0?'▲ ':'▼ ')+Math.abs(chg).toFixed(2)+'% 较前日';
-      } else { $('pcChg').textContent = ''; }
+      } else { $('pcChg').className = 'pcchg'; $('pcChg').textContent = ''; }
       $('priceInput').placeholder = Number(rows[0].price).toFixed(2);
     } else {
       $('pcValue').textContent = '—';
+      $('pcChg').className = 'pcchg';
       $('pcChg').textContent = '暂无数据';
     }
     if(rows.length){
@@ -744,7 +723,7 @@ async function loadPriceHistory(){
 }
 window.loadPriceHistory = loadPriceHistory;
 
-// ★ 编辑历史价格 — 可以同时修改日期和价格
+// 编辑历史价格 — 可以同时修改日期和价格
 function editPriceRow(rowId, dramaId, date, price){
   const row = document.getElementById('phrow-'+rowId);
   if(!row) return;
@@ -760,6 +739,7 @@ function editPriceRow(rowId, dramaId, date, price){
 }
 window.editPriceRow = editPriceRow;
 
+// 修复：直接更新原记录，不再"先删后插"，避免失败时丢数据
 async function savePriceEdit(rowId, dramaId){
   const inpDate = document.getElementById('phedit-date-'+rowId);
   const inpPrice = document.getElementById('phedit-price-'+rowId);
@@ -768,16 +748,18 @@ async function savePriceEdit(rowId, dramaId){
   const newPrice = parseFloat(inpPrice.value);
   if(!newDate || !newPrice || newPrice <= 0){ toast('请输入有效日期和价格','err'); return; }
   try{
-    await sbDelete('price_history', rowId);
-    await sbUpsert('price_history', [{drama_id: dramaId, price_date: newDate, price: newPrice}], 'drama_id,price_date');
+    await sbUpdate('price_history', rowId, {price_date: newDate, price: newPrice});
     toast('价格已更新 ✓');
     await loadPriceHistory();
     await loadDramas();
-  } catch(e){ toast('更新失败：'+e.message,'err'); }
+  } catch(e){
+    if(/duplicate key/i.test(e.message)) toast('该日期已有价格记录，请直接修改那一条','err');
+    else toast('更新失败：'+e.message,'err');
+  }
 }
 window.savePriceEdit = savePriceEdit;
 
-// ★ 新增：批量添加历史价格
+// 添加历史价格（任意日期）
 async function saveHistoryPrice(){
   const id = $('priceSelect').value;
   const date = $('historyDate').value;
@@ -837,7 +819,10 @@ async function loadSettings(){
     if(SETTINGS.line_qr_url){ $('qrPreview').src=SETTINGS.line_qr_url; $('qrPreview').style.display='block'; }
     currentTheme = Number(SETTINGS.theme)||0;
     updateThemeGrid();
-  } catch(e){ console.error('Settings load:', e); }
+  } catch(e){
+    console.error('Settings load:', e);
+    toast('设置读取失败：'+e.message,'err');
+  }
 }
 
 async function saveSettings(){
@@ -852,9 +837,9 @@ async function saveSettings(){
     theme: currentTheme
   };
   try{
-    await sbUpsert('settings', [payload], 'id');
-    SETTINGS = payload;
-    toast('设置已保存 ✓');  // ★ 已经有了成功提示！
+    const res = await sbUpsert('settings', [payload], 'id');
+    SETTINGS = res[0];
+    toast('设置已保存 ✓ 前台刷新页面后生效');
   } catch(e){ toast('保存失败：'+e.message,'err'); }
 }
 window.saveSettings = saveSettings;
@@ -873,91 +858,6 @@ function updateThemeGrid(){
 }
 function selectTheme(i){ currentTheme = i; updateThemeGrid(); }
 window.selectTheme = selectTheme;
-
-// ===== SETUP SQL =====
-function buildSetupSQL(){
-  const sql = `-- 1. 短剧表
-create table if not exists dramas (
-  id serial primary key,
-  title text,
-  description text,
-  poster_url text,
-  total_shares integer default 1000,
-  sold_shares integer default 0,
-  sort_order integer default 0,
-  created_at timestamptz default now()
-);
-
--- 2. 价格历史表
-create table if not exists price_history (
-  id serial primary key,
-  drama_id integer references dramas(id) on delete cascade,
-  price_date date not null,
-  price numeric(12,4) not null,
-  created_at timestamptz default now(),
-  unique(drama_id, price_date)
-);
-
--- 3. 设置表
-create table if not exists settings (
-  id integer primary key default 1,
-  site_title text default 'Encore Films',
-  site_subtitle text default '숏드라마 투자 플랫폼',
-  currency text default '$',
-  logo_url text,
-  line_qr_url text,
-  line_id text default '@encorefilms',
-  theme integer default 0
-);
-
--- 4. 插入默认设置
-insert into settings (id) values (1)
-on conflict (id) do nothing;
-
--- 5. 开放行级安全（前台读取）
-alter table dramas enable row level security;
-alter table price_history enable row level security;
-alter table settings enable row level security;
-
-drop policy if exists "public_read_dramas" on dramas;
-drop policy if exists "public_read_price_history" on price_history;
-drop policy if exists "public_read_settings" on settings;
-
-create policy "public_read_dramas"
-  on dramas for select using (true);
-create policy "public_read_price_history"
-  on price_history for select using (true);
-create policy "public_read_settings"
-  on settings for select using (true);`;
-  $('sqlBlock').textContent = sql;
-}
-function copySql(){
-  const sql = $('sqlBlock').textContent;
-  if(navigator.clipboard && window.isSecureContext){
-    navigator.clipboard.writeText(sql).then(()=>toast('SQL 已复制 ✓')).catch(()=>toast('复制失败','err'));
-  } else {
-    const a = document.createElement('textarea');
-    a.value = sql; a.style.cssText='position:fixed;opacity:0';
-    document.body.appendChild(a); a.select();
-    try{ document.execCommand('copy'); toast('SQL 已复制 ✓'); } catch(e){ toast('复制失败','err'); }
-    a.remove();
-  }
-}
-window.copySql = copySql;
-
-async function testConnection(){
-  const r = $('connResult');
-  r.textContent = '检测中…'; r.style.color = 'var(--muted)';
-  try{
-    const rows = await sbGet('dramas', {limit: 1});
-    r.textContent = '✅ 连接成功！数据库正常。';
-    r.style.color = 'var(--success)';
-  } catch(e){
-    r.textContent = '❌ 连接失败：'+e.message.slice(0,120);
-    r.style.color = 'var(--danger)';
-  }
-}
-window.testConnection = testConnection;
 
 $('editModal').addEventListener('click', e => { if(e.target === $('editModal')) closeEditModal(); });
 document.addEventListener('keydown', e => { if(e.key==='Escape') closeEditModal(); });
